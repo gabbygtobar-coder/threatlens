@@ -1,6 +1,6 @@
 # ThreatLens API
 
-FastAPI service. M2 exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect`. There is no persistence or auth.
+FastAPI service. M3 exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect`. There is no persistence or auth.
 
 ## Endpoints
 
@@ -30,7 +30,7 @@ Normalized event model: `app/models.py` (`LogEvent`, `Incident`). Log format: [.
 2024-01-15T03:12:01Z login_failure user=alice ip=203.0.113.10
 ```
 
-JSON lines (object per line, schema field names) are also accepted in the same blob.
+JSON lines (object per line, schema field names) are also accepted in the same blob. Optional `country=` / `geo=` (or JSON `country` / `geo`) is a simulated location key for `impossible_travel` — not MaxMind GeoIP.
 
 ## Run locally
 

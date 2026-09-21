@@ -1,0 +1,13 @@
+# ThreatLens auth log — restricted_access. 2024-03-16 UTC.
+# Policy: any access_denied whose resource matches /admin, /secrets, /etc/passwd, /.env.
+# mallory: three restricted denials (fires).
+# bob: access_denied to /inbox (not restricted; does not fire).
+# alice: normal dashboard request (does not fire).
+# 6 events. 0 parse errors.
+
+2024-03-16T15:00:00Z request user=alice ip=203.0.113.10 resource=/dashboard status=200
+2024-03-16T15:01:02Z access_denied user=mallory ip=198.51.100.7 resource=/admin status=403
+2024-03-16T15:01:08Z access_denied user=mallory ip=198.51.100.7 resource=/admin/users status=403
+2024-03-16T15:01:15Z access_denied user=mallory ip=198.51.100.7 resource=/etc/passwd status=403
+2024-03-16T15:01:40Z access_denied user=bob ip=198.51.100.20 resource=/inbox status=403
+2024-03-16T15:02:00Z request user=mallory ip=198.51.100.7 resource=/login status=200

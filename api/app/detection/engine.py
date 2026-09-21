@@ -7,11 +7,22 @@ from collections.abc import Sequence
 from app.detection.base import Rule
 from app.detection.rules.brute_force import BruteForceRule
 from app.detection.rules.credential_spray import CredentialSprayRule
+from app.detection.rules.impossible_travel import ImpossibleTravelRule
+from app.detection.rules.request_frequency import RequestFrequencyRule
+from app.detection.rules.restricted_access import RestrictedAccessRule
+from app.detection.rules.unusual_login import UnusualLoginRule
 from app.models import Incident, LogEvent, RuleInfo
 
 
 def default_rules() -> list[Rule]:
-    return [BruteForceRule(), CredentialSprayRule()]
+    return [
+        BruteForceRule(),
+        CredentialSprayRule(),
+        UnusualLoginRule(),
+        ImpossibleTravelRule(),
+        RequestFrequencyRule(),
+        RestrictedAccessRule(),
+    ]
 
 
 class DetectionEngine:

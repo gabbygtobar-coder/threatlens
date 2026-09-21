@@ -42,6 +42,13 @@ class LogEvent(BaseModel):
     user_agent: str | None = Field(default=None, description="Client user-agent, if present")
     resource: str | None = Field(default=None, description="Path or URL, if present")
     status_code: int | None = Field(default=None, description="HTTP-like status, if present")
+    country: str | None = Field(
+        default=None,
+        description=(
+            "Simulated location key from TLAL country=/geo= or JSON country/geo. "
+            "Not MaxMind GeoIP — used by the impossible_travel demo rule."
+        ),
+    )
     raw: str = Field(description="Original log line, kept for explainability")
 
     @field_serializer("timestamp")
@@ -71,6 +78,10 @@ class ParseRequest(BaseModel):
 class RuleId(str, Enum):
     BRUTE_FORCE = "brute_force"
     CREDENTIAL_SPRAY = "credential_spray"
+    UNUSUAL_LOGIN = "unusual_login"
+    IMPOSSIBLE_TRAVEL = "impossible_travel"
+    REQUEST_FREQUENCY = "request_frequency"
+    RESTRICTED_ACCESS = "restricted_access"
 
 
 class Severity(str, Enum):
@@ -88,7 +99,8 @@ class Incident(BaseModel):
     """One detection finding. Same events always produce the same incident payload.
 
     `id` is a 32-character SHA-256 prefix of
-    ``rule_id|source_ip|window_start|window_end`` (UTC Z timestamps), not a random UUID.
+    ``rule_id|correlation_key|window_start|window_end`` (UTC Z timestamps), not a
+    random UUID. The correlation key is typically a source IP or username.
 
     `created_at` is the last contributing event's timestamp (the window end), not
     wall-clock now, so the result is reproducible.
@@ -104,7 +116,7 @@ class Incident(BaseModel):
     description: str
     evidence: dict[str, Any] = Field(
         description=(
-            "Structured proof: source_ip, failure_count, usernames, window_start/end, "
+            "Structured proof: correlation keys, counts, window_start/end, "
             "thresholds, sample_raw, etc."
         )
     )
@@ -126,7 +138,7 @@ class RuleInfo(BaseModel):
     title: str
     description: str
     severity: Severity
-    thresholds: dict[str, int]
+    thresholds: dict[str, Any]
 
 
 class RulesResponse(BaseModel):

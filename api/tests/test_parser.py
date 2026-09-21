@@ -68,6 +68,27 @@ def test_unknown_keys_are_ignored() -> None:
     )
     assert event.username == "alice"
     assert event.source_ip == "203.0.113.10"
+    assert event.country is None
+
+
+def test_parse_country_and_geo_alias() -> None:
+    event = parse_line(
+        "2024-01-15T03:12:01Z login_success user=alice ip=203.0.113.10 country=US"
+    )
+    assert event.country == "US"
+    geo = parse_line(
+        "2024-01-15T03:12:01Z login_success user=alice ip=203.0.113.10 geo=jp"
+    )
+    assert geo.country == "JP"
+    both = parse_line(
+        "2024-01-15T03:12:01Z login_success user=alice ip=203.0.113.10 geo=JP country=US"
+    )
+    assert both.country == "US"
+    json_line = (
+        '{"timestamp":"2024-01-15T03:12:01Z","event_type":"login_success",'
+        '"source_ip":"203.0.113.10","username":"alice","country":"de"}'
+    )
+    assert parse_line(json_line).country == "DE"
 
 
 def test_oversized_line_is_an_error_not_a_crash() -> None:

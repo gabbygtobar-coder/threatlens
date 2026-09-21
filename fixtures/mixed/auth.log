@@ -1,5 +1,5 @@
 # ThreatLens auth log — mixed normal traffic and a failed-login burst (2024-03-13, UTC)
-# 33 events, 20 login_failure from 203.0.113.77. M1 parses only; M2 will detect.
+# 33 events, 20 login_failure from 203.0.113.77. Detects brute_force only.
 
 2024-03-13T14:02:10Z request user=- ip=192.0.2.15 resource=/health status=200
 2024-03-13T14:05:01Z login_success user=alice ip=203.0.113.10 ua="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/122.0.0.0" resource=/login status=200
@@ -37,4 +37,4 @@
 2024-03-14T14:45:02Z login_success user=alice ip=203.0.113.10 ua="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/122.0.0.0" resource=/login status=200
 2024-03-14T14:45:09Z request user=alice ip=203.0.113.10 resource=/dashboard status=200
 {"timestamp":"2024-03-14T15:01:00Z","event_type":"login_success","source_ip":"198.51.100.88","username":"erin","resource":"/login","status_code":200}
-2024-03-14T15:10:44Z access_denied user=mallory ip=198.51.100.7 resource=/admin status=403
+2024-03-14T15:10:44Z access_denied user=mallory ip=198.51.100.7 resource=/billing status=403

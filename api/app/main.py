@@ -13,10 +13,11 @@ MAX_BODY_BYTES = 1_048_576  # 1 MiB
 
 app = FastAPI(
     title="ThreatLens API",
-    version="0.2.0",
+    version="0.3.0",
     description=(
-        "Log parser and detection engine (M2). Rules: brute_force, credential_spray. "
-        "No persistence, auth, or AI."
+        "Log parser and detection engine (M3). Rules: brute_force, credential_spray, "
+        "unusual_login, impossible_travel (simulated geo), request_frequency, "
+        "restricted_access. No persistence, auth, or AI."
     ),
 )
 

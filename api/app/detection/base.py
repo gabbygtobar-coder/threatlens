@@ -6,6 +6,7 @@ import hashlib
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence
 from datetime import datetime, timedelta
+from typing import Any
 
 from app.models import EventType, Incident, LogEvent, RuleId, RuleInfo, Severity, utc_z
 
@@ -25,8 +26,8 @@ class Rule(ABC):
         """Return zero or more incidents for this rule only."""
 
     @abstractmethod
-    def thresholds(self) -> dict[str, int]:
-        """Public threshold values (minutes, counts) for GET /rules and evidence."""
+    def thresholds(self) -> dict[str, Any]:
+        """Public knobs for GET /rules and evidence (counts, minutes, prefixes)."""
 
     def info(self) -> RuleInfo:
         return RuleInfo(
@@ -40,13 +41,16 @@ class Rule(ABC):
 
 def stable_incident_id(
     rule_id: RuleId | str,
-    source_ip: str,
+    key: str,
     window_start: datetime,
     window_end: datetime,
 ) -> str:
-    """Deterministic id: sha256(rule_id|source_ip|window_start|window_end)[:32]."""
+    """Deterministic id: sha256(rule_id|key|window_start|window_end)[:32].
+
+    `key` is the correlation value (source IP, username, or a qualified key).
+    """
     rid = rule_id.value if isinstance(rule_id, RuleId) else rule_id
-    payload = f"{rid}|{source_ip}|{utc_z(window_start)}|{utc_z(window_end)}"
+    payload = f"{rid}|{key}|{utc_z(window_start)}|{utc_z(window_end)}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:32]
 
 
@@ -54,10 +58,32 @@ def login_failures(events: Sequence[LogEvent]) -> list[LogEvent]:
     return [event for event in events if event.event_type is EventType.LOGIN_FAILURE]
 
 
+def login_successes(events: Sequence[LogEvent]) -> list[LogEvent]:
+    return [event for event in events if event.event_type is EventType.LOGIN_SUCCESS]
+
+
+def request_events(events: Sequence[LogEvent]) -> list[LogEvent]:
+    return [event for event in events if event.event_type is EventType.REQUEST]
+
+
+def access_denied_events(events: Sequence[LogEvent]) -> list[LogEvent]:
+    return [event for event in events if event.event_type is EventType.ACCESS_DENIED]
+
+
 def group_by_source_ip(events: Sequence[LogEvent]) -> dict[str, list[LogEvent]]:
     grouped: dict[str, list[LogEvent]] = {}
     for event in events:
         grouped.setdefault(event.source_ip, []).append(event)
+    return grouped
+
+
+def group_by_username(events: Sequence[LogEvent]) -> dict[str, list[LogEvent]]:
+    """Skip anonymous events (username is null)."""
+    grouped: dict[str, list[LogEvent]] = {}
+    for event in events:
+        if not event.username:
+            continue
+        grouped.setdefault(event.username, []).append(event)
     return grouped
 
 
@@ -150,6 +176,22 @@ def evidence_payload(
         "window_end": utc_z(window_end),
         "window_minutes": window_minutes,
         "sample_raw": [event.raw for event in ordered[:SAMPLE_RAW_LIMIT]],
+    }
+    payload.update(extra)
+    return payload
+
+
+def cluster_window_evidence(
+    cluster: Sequence[LogEvent],
+    extra: dict[str, object],
+) -> dict[str, object]:
+    """Shared window + sample_raw fields without assuming login-failure semantics."""
+    ordered = sort_events(cluster)
+    payload: dict[str, object] = {
+        "window_start": utc_z(ordered[0].timestamp),
+        "window_end": utc_z(ordered[-1].timestamp),
+        "sample_raw": [event.raw for event in ordered[:SAMPLE_RAW_LIMIT]],
+        "event_count": len(ordered),
     }
     payload.update(extra)
     return payload
