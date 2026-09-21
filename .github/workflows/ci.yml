@@ -34,11 +34,16 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Import and /health smoke
         run: |
-          python -c "
-          from fastapi.testclient import TestClient
-          from app.main import app
-          response = TestClient(app).get('/health')
-          assert response.status_code == 200, response.text
-          assert response.json() == {'status': 'ok'}, response.json()
-          print(response.json())
-          "
+          python -c "from app.main import app"
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          pid=$!
+          trap 'kill $pid' EXIT
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/health | python -c "import sys, json; data = json.load(sys.stdin); assert data == {'status': 'ok'}, data"; then
+              echo "health ok"
+              exit 0
+            fi
+            sleep 0.2
+          done
+          echo "health check failed"
+          exit 1
