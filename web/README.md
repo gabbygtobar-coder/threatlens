@@ -1,10 +1,11 @@
 # ThreatLens web
 
-Next.js App Router frontend for M5: landing page, email/password auth, paste or
-upload a log, call FastAPI `/detect`, save under Supabase RLS, investigations
-list/detail with filters, live `GET /rules` catalog.
+Next.js App Router frontend (M5 UI, M6 harden): landing page, email/password
+auth, paste or upload a log, call FastAPI `/detect`, save under Supabase RLS,
+investigations list/detail with filters, live `GET /rules` catalog.
 
-There is no mock incident feed and no in-browser detector.
+Security headers are set in `next.config.ts`. There is no mock incident feed,
+no in-browser detector, and no `service_role` key.
 
 From this directory:
 
@@ -21,4 +22,6 @@ Open [http://localhost:3000](http://localhost:3000).
   login/save/investigations show a setup page.
 - Without `NEXT_PUBLIC_API_URL` Analyze and Rules fail honestly (no demo mode).
 
-Vercel: set Root Directory to `web`. See the repository root README.
+**Vercel:** set **Root Directory** to `web`. Do not add `vercel.json` at the repo
+root (this is a monorepo; a root config would fight `api/`). Gabby steps:
+[docs/deploy.md](../docs/deploy.md). Vercel env table: [docs/vercel.md](../docs/vercel.md).

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from app.main import MAX_BODY_BYTES, cors_origins
+from app.rate_limit import reset_rate_limit_state
 
 
 def test_health(client) -> None:
@@ -13,6 +14,7 @@ def test_cors_default_origins_include_local_web() -> None:
     origins = cors_origins()
     assert "http://localhost:3000" in origins
     assert "http://127.0.0.1:3000" in origins
+    assert "*" not in origins
 
 
 def test_cors_allows_local_web_preflight(client) -> None:
@@ -248,3 +250,39 @@ def test_detect_restricted_access_fixture(client, fixtures_dir: Path) -> None:
     assert len(payload["incidents"]) == 1
     assert payload["incidents"][0]["rule_id"] == "restricted_access"
     assert payload["incidents"][0]["evidence"]["denial_count"] == 3
+
+
+def test_detect_rate_limit_returns_429(client, monkeypatch) -> None:
+    monkeypatch.setenv("RATE_LIMIT_ENABLED", "true")
+    monkeypatch.setenv("RATE_LIMIT_REQUESTS", "2")
+    monkeypatch.setenv("RATE_LIMIT_WINDOW_SECONDS", "60")
+    reset_rate_limit_state()
+
+    headers = {"content-type": "text/plain", "Origin": "http://localhost:3000"}
+    body = b"2024-01-15T03:12:01Z login_failure user=alice ip=203.0.113.10"
+    assert client.post("/detect", content=body, headers=headers).status_code == 200
+    assert client.post("/detect", content=body, headers=headers).status_code == 200
+    limited = client.post("/detect", content=body, headers=headers)
+    assert limited.status_code == 429
+    assert limited.json() == {"detail": "Rate limit exceeded."}
+    assert limited.headers.get("retry-after") == "60"
+    # CORS wraps the limiter so the browser can read the 429.
+    assert limited.headers.get("access-control-allow-origin") == "http://localhost:3000"
+
+
+def test_health_is_not_rate_limited(client, monkeypatch) -> None:
+    monkeypatch.setenv("RATE_LIMIT_ENABLED", "true")
+    monkeypatch.setenv("RATE_LIMIT_REQUESTS", "1")
+    reset_rate_limit_state()
+    for _ in range(3):
+        response = client.get("/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+
+
+def test_rules_is_not_rate_limited(client, monkeypatch) -> None:
+    monkeypatch.setenv("RATE_LIMIT_ENABLED", "true")
+    monkeypatch.setenv("RATE_LIMIT_REQUESTS", "1")
+    reset_rate_limit_state()
+    for _ in range(3):
+        assert client.get("/rules").status_code == 200

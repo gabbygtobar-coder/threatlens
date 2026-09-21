@@ -1,4 +1,8 @@
 from pathlib import Path
+import os
+
+# Disable the in-memory limiter for the existing suite. Dedicated tests re-enable it.
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 import pytest
 from fastapi.testclient import TestClient

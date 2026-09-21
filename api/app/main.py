@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,33 +12,62 @@ from pydantic import ValidationError
 from app.detection import default_engine
 from app.models import DetectResult, ParseRequest, ParseResult, RulesResponse
 from app.parsing import parse_text
+from app.rate_limit import RateLimitMiddleware, rate_limit_config_summary
 
-MAX_BODY_BYTES = 1_048_576  # 1 MiB
+MAX_BODY_BYTES = 1_048_576  # 1 MiB — keep this bound; see docs/deploy.md
 DEFAULT_CORS_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000"
+
+logger = logging.getLogger("uvicorn.error")
 
 
 def cors_origins() -> list[str]:
-    """Browser origins allowed to call this API. Override with CORS_ORIGINS."""
+    """Browser origins allowed to call this API. Override with CORS_ORIGINS.
+
+    Default is local Next.js only. A deployed Vercel origin will not work until
+    CORS_ORIGINS lists it explicitly. Wildcard ``*`` is accepted but logged as a
+    warning — prefer the exact https origin so this stays production-safe.
+    """
     raw = os.getenv("CORS_ORIGINS", DEFAULT_CORS_ORIGINS)
     return [item.strip() for item in raw.split(",") if item.strip()]
 
 
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    origins = cors_origins()
+    if any(origin == "*" for origin in origins):
+        logger.warning(
+            "CORS_ORIGINS includes '*'. Prefer explicit https origins for the Vercel app."
+        )
+    # Startup logs are config only — never env dumps, bodies, or keys.
+    logger.info(
+        "API ready: cors_origins=%s max_body_bytes=%s rate_limit=%s",
+        origins,
+        MAX_BODY_BYTES,
+        rate_limit_config_summary(),
+    )
+    yield
+
+
 app = FastAPI(
     title="ThreatLens API",
-    version="0.4.0",
+    version="0.6.0",
     description=(
-        "Log parser and detection engine (M4). Rules: brute_force, credential_spray, "
+        "Log parser and detection engine (M6). Rules: brute_force, credential_spray, "
         "unusual_login, impossible_travel (simulated geo), request_frequency, "
         "restricted_access. Stateless: persistence and auth live in the Next.js app "
-        "via Supabase (Option A). No AI."
+        "via Supabase (Option A). No AI. 1 MiB body cap; in-memory POST rate limit."
     ),
+    lifespan=lifespan,
 )
 
+# Last add_middleware call is outermost. CORS must wrap the rate limiter so 429
+# responses still include Access-Control-Allow-Origin.
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins(),
     allow_credentials=False,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -45,6 +76,7 @@ engine = default_engine()
 
 @app.get("/health")
 def health() -> dict[str, str]:
+    """Liveness only. No config, no secrets, no dependency on Supabase."""
     return {"status": "ok"}
 
 
@@ -60,6 +92,7 @@ def list_rules() -> RulesResponse:
     responses={
         400: {"description": "Body is not valid UTF-8 or JSON envelope"},
         413: {"description": "Body exceeds 1 MiB"},
+        429: {"description": "Rate limit exceeded"},
     },
 )
 async def parse_logs(request: Request) -> ParseResult:
@@ -76,6 +109,7 @@ async def parse_logs(request: Request) -> ParseResult:
     responses={
         400: {"description": "Body is not valid UTF-8 or JSON envelope"},
         413: {"description": "Body exceeds 1 MiB"},
+        429: {"description": "Rate limit exceeded"},
     },
 )
 async def detect_logs(request: Request) -> DetectResult:
@@ -93,7 +127,10 @@ async def detect_logs(request: Request) -> DetectResult:
 
 
 async def _read_log_text(request: Request) -> str | None:
-    """Return log text, or None for an empty body. Raises HTTPException on bad input."""
+    """Return log text, or None for an empty body. Raises HTTPException on bad input.
+
+    Request bodies are not logged. Oversized bodies are rejected before parse.
+    """
     raw = await request.body()
     if len(raw) > MAX_BODY_BYTES:
         raise HTTPException(status_code=413, detail="Request body exceeds 1 MiB limit.")
