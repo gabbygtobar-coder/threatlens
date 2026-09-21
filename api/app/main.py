@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
 from app.detection import default_engine
@@ -10,15 +12,32 @@ from app.models import DetectResult, ParseRequest, ParseResult, RulesResponse
 from app.parsing import parse_text
 
 MAX_BODY_BYTES = 1_048_576  # 1 MiB
+DEFAULT_CORS_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000"
+
+
+def cors_origins() -> list[str]:
+    """Browser origins allowed to call this API. Override with CORS_ORIGINS."""
+    raw = os.getenv("CORS_ORIGINS", DEFAULT_CORS_ORIGINS)
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
 
 app = FastAPI(
     title="ThreatLens API",
-    version="0.3.0",
+    version="0.4.0",
     description=(
-        "Log parser and detection engine (M3). Rules: brute_force, credential_spray, "
+        "Log parser and detection engine (M4). Rules: brute_force, credential_spray, "
         "unusual_login, impossible_travel (simulated geo), request_frequency, "
-        "restricted_access. No persistence, auth, or AI."
+        "restricted_access. Stateless: persistence and auth live in the Next.js app "
+        "via Supabase (Option A). No AI."
     ),
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins(),
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 engine = default_engine()

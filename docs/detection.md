@@ -1,7 +1,8 @@
 # Detection engine
 
-M3 runs **deterministic, explainable rules** over normalized `LogEvent` lists
-from the M1 parser. There is no ML, no real geolocation, and no persistence.
+M3/M4 run **deterministic, explainable rules** over normalized `LogEvent` lists
+from the M1 parser. There is no ML and no real geolocation. The engine itself is
+still stateless; M4 persistence is the Next.js app writing to Supabase (Option A).
 
 ## How it runs
 
@@ -177,7 +178,8 @@ types each rule cares about are considered.
 - **Impossible travel is a simulation** (fixture fields + static TEST-NET
   prefixes). There is no MaxMind DB, no real km/hour check, no VPN detection.
 - Unusual login uses a global UTC office-hours window, not a per-user baseline.
-- No persistence: every `/detect` call is stateless.
+- The API is still stateless: every `/detect` call is independent. Saving a run
+  is a separate step in `web/` (Supabase RLS). See [auth-persistence.md](auth-persistence.md).
 - Thresholds are fixed defaults (overridable in code/tests, not via API).
 
 ## Curl
