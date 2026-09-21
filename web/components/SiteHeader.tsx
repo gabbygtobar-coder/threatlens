@@ -10,32 +10,43 @@ export function SiteHeader({
   configured: boolean;
 }) {
   return (
-    <header className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="text-sm font-semibold tracking-tight text-zinc-900">
+    <header className="sticky top-0 z-20 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <Link href="/" className="text-sm font-semibold tracking-tight text-zinc-50">
           ThreatLens
         </Link>
-        <nav className="flex items-center gap-3 text-sm">
+        <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-zinc-300">
+          <Link href="/analyze" className="hover:text-zinc-50">
+            Analyze
+          </Link>
+          <Link href="/analyses" className="hover:text-zinc-50">
+            Investigations
+          </Link>
+          <Link href="/rules" className="hover:text-zinc-50">
+            Rules
+          </Link>
           {email ? (
             <>
-              <span className="hidden text-zinc-600 sm:inline">{email}</span>
+              <span className="hidden max-w-48 truncate text-zinc-500 sm:inline" title={email}>
+                {email}
+              </span>
               <LogoutButton />
             </>
           ) : (
             <>
-              <Link href="/login" className="text-zinc-700 hover:text-zinc-900">
+              <Link href="/login" className="hover:text-zinc-50">
                 Log in
               </Link>
               <Link
                 href="/signup"
-                className="rounded-md bg-zinc-900 px-3 py-1.5 text-white hover:bg-zinc-800"
+                className="rounded-md bg-sky-500 px-3 py-1.5 text-zinc-950 hover:bg-sky-400"
               >
                 Sign up
               </Link>
             </>
           )}
           {!configured ? (
-            <span className="text-xs text-zinc-500">env not set</span>
+            <span className="text-xs text-amber-400">auth env unset</span>
           ) : null}
         </nav>
       </div>

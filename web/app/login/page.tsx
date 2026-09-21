@@ -5,6 +5,10 @@ import { SetupNeeded } from "@/components/SetupNeeded";
 import { getCurrentUser } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/env";
 
+export const metadata = {
+  title: "Log in",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function LoginPage({
@@ -13,7 +17,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   if (!isSupabaseConfigured()) {
-    return <SetupNeeded />;
+    return <SetupNeeded purpose="Log in uses Supabase Auth." />;
   }
 
   const user = await getCurrentUser();

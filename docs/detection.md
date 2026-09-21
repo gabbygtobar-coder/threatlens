@@ -179,7 +179,8 @@ types each rule cares about are considered.
   prefixes). There is no MaxMind DB, no real km/hour check, no VPN detection.
 - Unusual login uses a global UTC office-hours window, not a per-user baseline.
 - The API is still stateless: every `/detect` call is independent. Saving a run
-  is a separate step in `web/` (Supabase RLS). See [auth-persistence.md](auth-persistence.md).
+  is a separate step in `web/` (Supabase RLS). The M5 UI only displays engine
+  output and saved rows. See [auth-persistence.md](auth-persistence.md).
 - Thresholds are fixed defaults (overridable in code/tests, not via API).
 
 ## Curl

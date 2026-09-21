@@ -1,0 +1,60 @@
+# ThreatLens auth log — request_frequency. 2024-03-16 UTC.
+# 50 request events from 203.0.113.99 in 49 seconds (fires; threshold 50 / 1 minute).
+# Plus 3 requests from 192.0.2.15 (below threshold) and one login_success (ignored).
+# 54 events. 0 parse errors.
+
+2024-03-16T17:59:50Z login_success user=alice ip=203.0.113.10 resource=/login status=200
+2024-03-16T18:00:00Z request user=- ip=192.0.2.15 resource=/health status=200
+2024-03-16T18:00:10Z request user=- ip=192.0.2.15 resource=/health status=200
+2024-03-16T18:00:20Z request user=- ip=192.0.2.15 resource=/health status=200
+
+2024-03-16T18:00:00Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:01Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:02Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:03Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:04Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:05Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:06Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:07Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:08Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:09Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:10Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:11Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:12Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:13Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:14Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:15Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:16Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:17Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:18Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:19Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:20Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:21Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:22Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:23Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:24Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:25Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:26Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:27Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:28Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:29Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:30Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:31Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:32Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:33Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:34Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:35Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:36Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:37Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:38Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:39Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:40Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:41Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:42Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:43Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:44Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:45Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:46Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:47Z request user=- ip=203.0.113.99 resource=/api/search status=200
+2024-03-16T18:00:48Z request user=- ip=203.0.113.99 resource=/api/items status=200
+2024-03-16T18:00:49Z request user=- ip=203.0.113.99 resource=/api/search status=200

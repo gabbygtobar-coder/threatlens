@@ -1,0 +1,54 @@
+# ThreatLens auth log — brute-force style failed logins (single source IP)
+# 40 failures against alice, then 10 against bob. Same IP: 203.0.113.77
+# 50 login_failure events. M1 parses these; M2 will detect.
+
+2024-03-13T02:14:01Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:02Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:03Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:04Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:05Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:06Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:07Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:08Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:09Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:10Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:11Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:12Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:13Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:14Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:15Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:16Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:17Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:18Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:19Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:20Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:21Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:22Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:23Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:24Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:25Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:26Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:27Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:28Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:29Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:30Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:31Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:32Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:33Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:34Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:35Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:36Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:37Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:38Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:39Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:40Z login_failure user=alice ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:41Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:42Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:43Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:44Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:45Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:46Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:47Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:48Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:49Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
+2024-03-13T02:14:50Z login_failure user=bob ip=203.0.113.77 ua="Mozilla/5.0 (compatible; scanner)" resource=/login status=401
