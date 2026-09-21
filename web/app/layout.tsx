@@ -1,16 +1,38 @@
 import type { Metadata } from "next";
+import { Geist } from "next/font/google";
+
+import { SiteHeader } from "@/components/SiteHeader";
+import { getCurrentUser } from "@/lib/auth";
+import { isSupabaseConfigured } from "@/lib/env";
+
 import "./globals.css";
+
+const geist = Geist({
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "ThreatLens",
   description:
-    "Portfolio log-analysis project. Detection (brute-force, credential spray) is in the API, not this UI.",
+    "Portfolio log-analysis project. Detection runs in FastAPI; saved analyses live in Supabase under RLS.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const configured = isSupabaseConfigured();
+  let email: string | null = null;
+  if (configured) {
+    const user = await getCurrentUser();
+    email = user?.email ?? null;
+  }
+
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${geist.className} min-h-screen bg-zinc-50 text-zinc-900 antialiased`}>
+        <SiteHeader email={email} configured={configured} />
+        {children}
+      </body>
     </html>
   );
 }

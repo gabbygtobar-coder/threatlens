@@ -19,7 +19,11 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      # Public placeholders only — CI must not require a live Supabase project.
+      # Real URL/anon key stay in Gabby's dashboard / local .env.local.
       - run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://127.0.0.1:8000
 
   api:
     runs-on: ubuntu-latest

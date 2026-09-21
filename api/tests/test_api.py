@@ -1,12 +1,37 @@
 from pathlib import Path
 
-from app.main import MAX_BODY_BYTES
+from app.main import MAX_BODY_BYTES, cors_origins
 
 
 def test_health(client) -> None:
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_cors_default_origins_include_local_web() -> None:
+    origins = cors_origins()
+    assert "http://localhost:3000" in origins
+    assert "http://127.0.0.1:3000" in origins
+
+
+def test_cors_allows_local_web_preflight(client) -> None:
+    response = client.options(
+        "/detect",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert response.status_code in (200, 204)
+    assert response.headers.get("access-control-allow-origin") == "http://localhost:3000"
+
+
+def test_cors_reflects_origin_on_health(client) -> None:
+    response = client.get("/health", headers={"Origin": "http://127.0.0.1:3000"})
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-origin") == "http://127.0.0.1:3000"
 
 
 def test_parse_plain_text(client) -> None:

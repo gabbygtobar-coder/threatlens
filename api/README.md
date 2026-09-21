@@ -1,6 +1,6 @@
 # ThreatLens API
 
-FastAPI service. M3 exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect`. There is no persistence or auth.
+FastAPI service. M4 still exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect` only. Persistence and login live in the Next.js app (Option A) — this process does not take a user JWT or a service role key.
 
 ## Endpoints
 
@@ -18,9 +18,18 @@ FastAPI service. M3 exposes `GET /health`, `GET /rules`, `POST /parse`, and `POS
 
 Bodies larger than 1 MiB are rejected (`413`). Malformed lines are listed in parse errors; they do not fail the request.
 
+## CORS
+
+The web app calls this API from the browser. Default `Access-Control-Allow-Origin` list:
+
+- `http://localhost:3000`
+- `http://127.0.0.1:3000`
+
+Override with `CORS_ORIGINS` (comma-separated). For a deployed frontend, set that origin explicitly (see `api/.env.example`). Do not use a wildcard if you later send credentials.
+
 ## Schema and log format
 
-Normalized event model: `app/models.py` (`LogEvent`, `Incident`). Log format: [../docs/log-schema.md](../docs/log-schema.md). Detection: [../docs/detection.md](../docs/detection.md).
+Normalized event model: `app/models.py` (`LogEvent`, `Incident`). Log format: [../docs/log-schema.md](../docs/log-schema.md). Detection: [../docs/detection.md](../docs/detection.md). Auth/persistence: [../docs/auth-persistence.md](../docs/auth-persistence.md).
 
 **ThreatLens Auth Log (TLAL)** — one event per line:
 
