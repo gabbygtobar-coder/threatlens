@@ -18,10 +18,12 @@ Keys:
     ua        optional  user-agent (quote if it contains spaces)
     resource  optional  path or URL
     status    optional  integer status code
+    country   optional  simulated location key (ISO-like code); alias: geo=
 
 Blank lines and lines whose first non-whitespace character is # are skipped.
 JSON lines start with { and use the normalized field names (timestamp,
-event_type, source_ip, username, user_agent, resource, status_code).
+event_type, source_ip, username, user_agent, resource, status_code, country
+or geo).
 """
 
 from __future__ import annotations
@@ -108,6 +110,7 @@ def _parse_text_line(line: str) -> LogEvent:
     user_agent = fields.get("ua") or None
     resource = fields.get("resource") or None
     status_code = _parse_status(fields.get("status")) if "status" in fields else None
+    country = _parse_country(fields.get("country"), fields.get("geo"))
 
     return LogEvent(
         timestamp=timestamp,
@@ -117,6 +120,7 @@ def _parse_text_line(line: str) -> LogEvent:
         user_agent=user_agent,
         resource=resource,
         status_code=status_code,
+        country=country,
         raw=line,
     )
 
@@ -149,6 +153,7 @@ def _parse_json_line(line: str) -> LogEvent:
         status_code=_parse_status(payload.get("status_code"))
         if payload.get("status_code") is not None
         else None,
+        country=_parse_country(payload.get("country"), payload.get("geo")),
         raw=line,
     )
 
@@ -226,6 +231,19 @@ def _normalize_username(value: object) -> str | None:
     if stripped in ("", "-"):
         return None
     return stripped
+
+
+def _parse_country(country: object, geo: object = None) -> str | None:
+    """Optional simulated location. `country` wins over `geo`. Stored uppercase."""
+    raw = country if country not in (None, "") else geo
+    if raw is None:
+        return None
+    if not isinstance(raw, str):
+        raise ValueError("country/geo must be a string")
+    stripped = raw.strip()
+    if stripped in ("", "-"):
+        return None
+    return stripped.upper()
 
 
 def _optional_str(value: object) -> str | None:

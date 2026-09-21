@@ -4,15 +4,14 @@ ThreatLens is a portfolio project for cybersecurity log analysis and threat dete
 
 **Stack:** Next.js and TypeScript in `web/`, FastAPI and Python in `api/`. Postgres (likely via Supabase) is planned later; it is not wired up yet.
 
-**Current status:** M2 complete. The API parses ThreatLens Auth Log (TLAL) text/JSON lines and runs a deterministic detection engine with two rules: `brute_force` and `credential_spray`. Incidents are explainable (rule id, thresholds, evidence). There is no dashboard of alerts, no database, no auth, and no AI.
+**Current status:** M3 complete. The API parses ThreatLens Auth Log (TLAL) text/JSON lines and runs a deterministic detection engine with six rules: `brute_force`, `credential_spray`, `unusual_login`, `impossible_travel` (simulated geo), `request_frequency`, and `restricted_access`. Incidents are explainable (rule id, thresholds, evidence). There is no dashboard of alerts, no database, no auth, and no AI.
 
 ## Roadmap
 
 - **M1** — log parser and fixtures
-- **M2** — detection engine: brute_force + credential_spray *(this)*
-- **M3** — persistence (Postgres / Supabase)
-- **M4** — UI that shows real detections from the engine
-- **Later** — more rules (unusual login, impossible travel, …); auth if needed
+- **M2** — detection engine: brute_force + credential_spray
+- **M3** — more rules: unusual_login, impossible_travel (simulated), request_frequency, restricted_access *(this)*
+- **Later** — persistence (Postgres / Supabase); UI that shows real detections from the engine; auth if needed
 - **Optional, last** — AI as explain-only (never as the detector)
 
 ## Run locally
@@ -52,7 +51,9 @@ curl -sS -X POST http://127.0.0.1:8000/detect \
 
 curl -sS -X POST http://127.0.0.1:8000/detect \
   -H 'Content-Type: text/plain' \
-  --data-binary @fixtures/spray/auth.log
+  --data-binary @fixtures/unusual_login/auth.log
+
+curl -sS http://127.0.0.1:8000/rules
 ```
 
 Parser: [docs/log-schema.md](docs/log-schema.md). Detection: [docs/detection.md](docs/detection.md). Samples: [fixtures/README.md](fixtures/README.md).
@@ -65,15 +66,21 @@ pip install -r requirements.txt
 pytest
 ```
 
-## Thresholds (M2 defaults)
+## Thresholds (M3 defaults)
 
-| Rule | Trigger | N / M | Window | Severity |
-| --- | --- | --- | --- | --- |
-| `brute_force` | `login_failure` from the same IP | **10** failures | **5** minutes | `high` |
-| `credential_spray` | `login_failure` from the same IP across distinct usernames | **5** usernames | **10** minutes | `high` |
+| Rule | Trigger | Defaults | Severity |
+| --- | --- | --- | --- |
+| `brute_force` | `login_failure` from the same IP | **10** failures / **5** min | `high` |
+| `credential_spray` | `login_failure` from the same IP across distinct usernames | **5** usernames / **10** min | `high` |
+| `unusual_login` | `login_success` outside 08:00–22:00 UTC, **or** ≥ N successes for the same user in T | **08–22** UTC; **5** successes / **10** min | `medium` |
+| `impossible_travel` | `login_success` for the same user from ≥2 **simulated** countries in T | **2** countries / **60** min | `high` |
+| `request_frequency` | `request` events from the same IP | **50** requests / **1** min | `medium` |
+| `restricted_access` | any `access_denied` to `/admin`, `/secrets`, `/etc/passwd`, `/.env` | **1** denial | `high` |
 
-Incident `id` is a SHA-256 prefix of `rule_id|source_ip|window_start|window_end` (deterministic). `created_at` is the last contributing event time.
+Incident `id` is a SHA-256 prefix of `rule_id|correlation_key|window_start|window_end` (deterministic). `created_at` is the last contributing event time.
+
+**Impossible travel is simulated:** locations come from fixture `country=` / `geo=` fields or a static TEST-NET IP-prefix map. There is no MaxMind GeoIP database.
 
 ## Honest scope
 
-This is not a production detection platform. It finds brute-force and credential-spray patterns in **synthetic TLAL** fixtures. It does not ingest live logs, geolocate, learn baselines, or render a SOC UI. Features that do not exist (dashboard mock alerts, AI, login) are intentionally absent.
+This is not a production detection platform. It finds the patterns above in **synthetic TLAL** fixtures. It does not ingest live logs, perform real geolocation, learn baselines, or render a SOC UI. Features that do not exist (dashboard mock alerts, AI, login) are intentionally absent.

@@ -1,0 +1,18 @@
+# ThreatLens auth log — impossible_travel (SIMULATED geo, not MaxMind). 2024-03-16 UTC.
+# alice: login_success US then JP 25 minutes later (fires).
+# bob: two successes, same country US (does not fire).
+# carol: US then JP but 2 hours apart (does not fire; window is 60 minutes).
+# Locations come from country= / geo= on the line.
+# 8 events. 0 parse errors.
+
+2024-03-16T12:00:00Z login_success user=alice ip=203.0.113.10 country=US ua="Mozilla/5.0" resource=/login status=200
+2024-03-16T12:00:10Z request user=alice ip=203.0.113.10 resource=/dashboard status=200
+2024-03-16T12:25:00Z login_success user=alice ip=198.51.100.80 geo=JP ua="Mozilla/5.0" resource=/login status=200
+
+2024-03-16T12:05:00Z login_success user=bob ip=203.0.113.45 country=US resource=/login status=200
+2024-03-16T12:20:00Z login_success user=bob ip=203.0.113.46 country=US resource=/login status=200
+
+2024-03-16T09:00:00Z login_success user=carol ip=203.0.113.50 country=US resource=/login status=200
+2024-03-16T11:05:00Z login_success user=carol ip=192.0.2.80 country=JP resource=/login status=200
+
+{"timestamp":"2024-03-16T12:30:00Z","event_type":"request","source_ip":"192.0.2.15","username":null,"resource":"/health","status_code":200}

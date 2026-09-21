@@ -68,11 +68,44 @@ def test_rules_lists_thresholds(client) -> None:
     assert response.status_code == 200
     payload = response.json()
     by_id = {rule["rule_id"]: rule for rule in payload["rules"]}
-    assert set(by_id) == {"brute_force", "credential_spray"}
+    assert set(by_id) == {
+        "brute_force",
+        "credential_spray",
+        "unusual_login",
+        "impossible_travel",
+        "request_frequency",
+        "restricted_access",
+    }
     assert by_id["brute_force"]["severity"] == "high"
     assert by_id["brute_force"]["thresholds"] == {"min_failures": 10, "window_minutes": 5}
     assert by_id["credential_spray"]["severity"] == "high"
     assert by_id["credential_spray"]["thresholds"] == {"min_usernames": 5, "window_minutes": 10}
+    assert by_id["unusual_login"]["severity"] == "medium"
+    assert by_id["unusual_login"]["thresholds"] == {
+        "hours_start_utc": 8,
+        "hours_end_utc": 22,
+        "min_successes": 5,
+        "window_minutes": 10,
+    }
+    assert by_id["impossible_travel"]["severity"] == "high"
+    assert by_id["impossible_travel"]["thresholds"] == {
+        "min_locations": 2,
+        "window_minutes": 60,
+    }
+    assert "simulated" in by_id["impossible_travel"]["title"].lower()
+    assert by_id["request_frequency"]["severity"] == "medium"
+    assert by_id["request_frequency"]["thresholds"] == {
+        "min_requests": 50,
+        "window_minutes": 1,
+    }
+    assert by_id["restricted_access"]["severity"] == "high"
+    assert by_id["restricted_access"]["thresholds"]["min_denials"] == 1
+    assert by_id["restricted_access"]["thresholds"]["restricted_prefixes"] == [
+        "/admin",
+        "/secrets",
+        "/etc/passwd",
+        "/.env",
+    ]
 
 
 def test_detect_empty_body(client) -> None:
@@ -140,3 +173,53 @@ def test_detect_rejects_oversized_body(client) -> None:
         headers={"content-type": "text/plain"},
     )
     assert response.status_code == 413
+
+
+def test_detect_unusual_login_fixture(client, fixtures_dir: Path) -> None:
+    text = (fixtures_dir / "unusual_login" / "auth.log").read_text(encoding="utf-8")
+    response = client.post("/detect", json={"text": text})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["events_count"] == 10
+    assert payload["parse_errors"] == []
+    reasons = {item["evidence"]["reason"] for item in payload["incidents"]}
+    assert reasons == {"off_hours", "frequency"}
+    assert all(item["rule_id"] == "unusual_login" for item in payload["incidents"])
+
+
+def test_detect_impossible_travel_fixture(client, fixtures_dir: Path) -> None:
+    text = (fixtures_dir / "impossible_travel" / "auth.log").read_text(encoding="utf-8")
+    response = client.post("/detect", json={"text": text})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["events_count"] == 8
+    assert payload["parse_errors"] == []
+    assert len(payload["incidents"]) == 1
+    incident = payload["incidents"][0]
+    assert incident["rule_id"] == "impossible_travel"
+    assert incident["evidence"]["geo_simulated"] is True
+    assert incident["evidence"]["locations"] == ["US", "JP"]
+
+
+def test_detect_request_frequency_fixture(client, fixtures_dir: Path) -> None:
+    text = (fixtures_dir / "request_frequency" / "auth.log").read_text(encoding="utf-8")
+    response = client.post("/detect", json={"text": text})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["events_count"] == 54
+    assert payload["parse_errors"] == []
+    assert len(payload["incidents"]) == 1
+    assert payload["incidents"][0]["rule_id"] == "request_frequency"
+    assert payload["incidents"][0]["evidence"]["request_count"] == 50
+
+
+def test_detect_restricted_access_fixture(client, fixtures_dir: Path) -> None:
+    text = (fixtures_dir / "restricted_access" / "auth.log").read_text(encoding="utf-8")
+    response = client.post("/detect", json={"text": text})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["events_count"] == 6
+    assert payload["parse_errors"] == []
+    assert len(payload["incidents"]) == 1
+    assert payload["incidents"][0]["rule_id"] == "restricted_access"
+    assert payload["incidents"][0]["evidence"]["denial_count"] == 3
