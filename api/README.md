@@ -1,12 +1,12 @@
 # ThreatLens API
 
-FastAPI service. M5 still exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect` only. Persistence, login, and the investigation UI live in the Next.js app (Option A) — this process does not take a user JWT or a service role key.
+FastAPI service. M6 still exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect` only. Persistence, login, and the investigation UI live in the Next.js app (Option A) — this process does not take a user JWT or a service role key. No AI.
 
 ## Endpoints
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/health` | Liveness. Returns `{"status":"ok"}`. |
+| `GET` | `/health` | Liveness. Returns `{"status":"ok"}`. No config, no secrets. |
 | `GET` | `/rules` | Registered detectors and thresholds. |
 | `POST` | `/parse` | Parse raw log text. Returns `{ "events": [...], "errors": [...] }`. |
 | `POST` | `/detect` | Parse, then run the engine. Returns `{ "events_count", "incidents", "parse_errors" }`. |
@@ -16,16 +16,31 @@ FastAPI service. M5 still exposes `GET /health`, `GET /rules`, `POST /parse`, an
 - `Content-Type: text/plain` — body is the log blob
 - `Content-Type: application/json` — `{"text": "<log lines>"}`
 
-Bodies larger than 1 MiB are rejected (`413`). Malformed lines are listed in parse errors; they do not fail the request.
+Bodies larger than **1 MiB** are rejected (`413`). That bound is intentional and kept. Malformed lines are listed in parse errors; they do not fail the request.
+
+POST `/parse` and `/detect` are also **rate-limited** in-memory: **60 requests / 60 seconds / client IP** by default (`RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS`). `GET /health` and `GET /rules` are not limited. Exceeding the cap is `429`. This is per process (not Redis); disable with `RATE_LIMIT_ENABLED=false`. Request bodies are not logged.
 
 ## CORS
 
-The web app calls this API from the browser. Default `Access-Control-Allow-Origin` list:
+The web app calls this API from the browser. Default `Access-Control-Allow-Origin` list (production-safe: local only):
 
 - `http://localhost:3000`
 - `http://127.0.0.1:3000`
 
-Override with `CORS_ORIGINS` (comma-separated). For a deployed frontend, set that origin explicitly (see `api/.env.example`). Do not use a wildcard if you later send credentials.
+A hosted Vercel origin will **fail CORS** until you set `CORS_ORIGINS` (comma-separated) and restart. Example: `https://your-app.vercel.app`. Do not use `*`. See `api/.env.example` and [../docs/deploy.md](../docs/deploy.md).
+
+## Docker (Render / Railway / Fly)
+
+```bash
+docker build -t threatlens-api .
+docker run --rm -p 8000:8000 \
+  -e CORS_ORIGINS=https://YOUR-APP.vercel.app,http://localhost:3000,http://127.0.0.1:3000 \
+  threatlens-api
+```
+
+The image listens on `0.0.0.0:$PORT` (default 8000). Health check: `GET /health`. Do not bake `.env` into the image.
+
+Native start (same contract): `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
 
 ## Schema and log format
 

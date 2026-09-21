@@ -68,3 +68,5 @@ def test_api_env_example_documents_cors() -> None:
     text = (REPO_ROOT / "api" / ".env.example").read_text(encoding="utf-8")
     assert "CORS_ORIGINS=" in text
     assert "localhost:3000" in text
+    assert "RATE_LIMIT" in text
+    assert "*" in text  # documents why not to use wildcard

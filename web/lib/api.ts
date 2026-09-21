@@ -76,6 +76,11 @@ export async function detectLogs(text: string): Promise<DetectResult> {
     | null;
 
   if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error(
+        "Detection API rate limit exceeded (HTTP 429). Default cap is 60 POST /detect per minute per IP.",
+      );
+    }
     const detail =
       payload && typeof payload === "object" && "detail" in payload
         ? JSON.stringify(payload.detail)

@@ -115,4 +115,4 @@ service role key on the API either — it does not need one under Option A.
 - No mock incident widgets — M5 lists only saved `/detect` rows.
 - CI does **not** talk to Supabase. Detection tests and a static SQL/RLS check
   run without secrets. End-to-end save/load requires Gabby’s project env.
-  Vercel notes: [vercel.md](vercel.md).
+  Deploy: [deploy.md](deploy.md). Vercel notes: [vercel.md](vercel.md).

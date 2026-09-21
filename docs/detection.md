@@ -1,8 +1,9 @@
 # Detection engine
 
-M3/M4 run **deterministic, explainable rules** over normalized `LogEvent` lists
+M3+ run **deterministic, explainable rules** over normalized `LogEvent` lists
 from the M1 parser. There is no ML and no real geolocation. The engine itself is
-still stateless; M4 persistence is the Next.js app writing to Supabase (Option A).
+still stateless; M4+ persistence is the Next.js app writing to Supabase (Option A).
+M6 does not add rules.
 
 ## How it runs
 

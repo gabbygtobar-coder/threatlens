@@ -1,6 +1,10 @@
 # Vercel (web UI)
 
+Full Gabby order (Supabase → API → Vercel → smoke): [deploy.md](deploy.md).
+
 Gabby authorized Vercel for **visuals**. The detection API is still a separate FastAPI process. Do not claim a production API is live unless it is actually deployed and `NEXT_PUBLIC_API_URL` points at it.
+
+**Do not add `vercel.json` at the repo root.** Root Directory `web` is the Vercel project setting that keeps `api/` out of the Next.js build.
 
 ## Project settings
 

@@ -67,19 +67,19 @@ export function LandingPage({
           </ul>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-          <h2 className="text-sm font-semibold text-zinc-50">Implemented (M5)</h2>
+          <h2 className="text-sm font-semibold text-zinc-50">Implemented (M0–M6)</h2>
           <ul className="mt-3 space-y-2 text-sm text-zinc-400">
             <li>TLAL parser and six rules</li>
-            <li>Email/password auth</li>
-            <li>Save / list / detail of real /detect output</li>
-            <li>Investigation filters over saved rows</li>
+            <li>Email/password auth + RLS save</li>
+            <li>Investigation UI over real /detect output</li>
             <li>Live GET /rules catalog</li>
+            <li>Deploy docs, 1 MiB body cap, POST rate limit</li>
           </ul>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
           <h2 className="text-sm font-semibold text-zinc-50">Not this product</h2>
           <ul className="mt-3 space-y-2 text-sm text-zinc-400">
-            <li>No AI / LLM detection</li>
+            <li>M7 AI explain-only — not started</li>
             <li>No MaxMind / real GeoIP</li>
             <li>No live log streaming</li>
             <li>No mock incident feed or charts</li>

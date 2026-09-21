@@ -53,3 +53,24 @@ jobs:
           done
           echo "health check failed"
           exit 1
+
+  api-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build API image
+        run: docker build -t threatlens-api:ci ./api
+      - name: Run image and hit /health
+        run: |
+          docker run -d --name threatlens-api -p 8000:8000 -e RATE_LIMIT_ENABLED=false threatlens-api:ci
+          trap 'docker rm -f threatlens-api' EXIT
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/health | python3 -c "import sys, json; data = json.load(sys.stdin); assert data == {'status': 'ok'}, data"; then
+              echo "docker health ok"
+              exit 0
+            fi
+            sleep 0.5
+          done
+          docker logs threatlens-api || true
+          echo "docker health check failed"
+          exit 1
