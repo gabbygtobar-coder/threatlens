@@ -127,3 +127,21 @@ def test_edge_fixture_does_not_crash(fixtures_dir: Path) -> None:
     assert "Invalid timestamp" in reasons or "ISO-8601" in reasons
     assert "Invalid IP" in reasons
     assert "Invalid JSON" in reasons
+
+
+def test_spray_fixture_parses_to_eight_users(fixtures_dir: Path) -> None:
+    result = parse_path(fixtures_dir / "spray" / "auth.log")
+    assert result.errors == []
+    assert len(result.events) == 8
+    assert all(e.event_type is EventType.LOGIN_FAILURE for e in result.events)
+    assert {e.source_ip for e in result.events} == {"198.51.100.66"}
+    assert {e.username for e in result.events} == {
+        "alice",
+        "bob",
+        "carol",
+        "dave",
+        "erin",
+        "frank",
+        "grace",
+        "heidi",
+    }

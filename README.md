@@ -4,15 +4,15 @@ ThreatLens is a portfolio project for cybersecurity log analysis and threat dete
 
 **Stack:** Next.js and TypeScript in `web/`, FastAPI and Python in `api/`. Postgres (likely via Supabase) is planned later; it is not wired up yet.
 
-**Current status:** M1 complete. There is a normalized log event schema, a parser for a documented custom auth-log format (text + JSON lines), fixture sets under `fixtures/`, and `POST /parse`. There is no detection engine, no database, no auth, and no AI.
+**Current status:** M2 complete. The API parses ThreatLens Auth Log (TLAL) text/JSON lines and runs a deterministic detection engine with two rules: `brute_force` and `credential_spray`. Incidents are explainable (rule id, thresholds, evidence). There is no dashboard of alerts, no database, no auth, and no AI.
 
 ## Roadmap
 
-- **M1** — log parser and fixtures *(this)*
-- **M2** — detection engine
+- **M1** — log parser and fixtures
+- **M2** — detection engine: brute_force + credential_spray *(this)*
 - **M3** — persistence (Postgres / Supabase)
 - **M4** — UI that shows real detections from the engine
-- **Later** — auth, if the project needs it
+- **Later** — more rules (unusual login, impossible travel, …); auth if needed
 - **Optional, last** — AI as explain-only (never as the detector)
 
 ## Run locally
@@ -27,7 +27,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). You should see the ThreatLens landing page and nothing else.
+Open [http://localhost:3000](http://localhost:3000). Landing page only — detections are API-side.
 
 ### API (`api/`)
 
@@ -40,9 +40,22 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 - `GET http://127.0.0.1:8000/health` → `{"status":"ok"}`
-- `POST http://127.0.0.1:8000/parse` — raw log text (`text/plain` or JSON `{"text":"..."}`) → `{ "events": [...], "errors": [...] }`
+- `GET http://127.0.0.1:8000/rules` → registered rule ids and thresholds
+- `POST http://127.0.0.1:8000/parse` — raw log text → `{ "events": [...], "errors": [...] }`
+- `POST http://127.0.0.1:8000/detect` — same body as `/parse` → `{ "events_count": N, "incidents": [...], "parse_errors": [...] }`
 
-Parser format and schema: [docs/log-schema.md](docs/log-schema.md). Sample logs: [fixtures/README.md](fixtures/README.md).
+```bash
+# From the repo root, with the API running on :8000
+curl -sS -X POST http://127.0.0.1:8000/detect \
+  -H 'Content-Type: text/plain' \
+  --data-binary @fixtures/bruteforce/auth.log
+
+curl -sS -X POST http://127.0.0.1:8000/detect \
+  -H 'Content-Type: text/plain' \
+  --data-binary @fixtures/spray/auth.log
+```
+
+Parser: [docs/log-schema.md](docs/log-schema.md). Detection: [docs/detection.md](docs/detection.md). Samples: [fixtures/README.md](fixtures/README.md).
 
 ### Tests
 
@@ -52,6 +65,15 @@ pip install -r requirements.txt
 pytest
 ```
 
+## Thresholds (M2 defaults)
+
+| Rule | Trigger | N / M | Window | Severity |
+| --- | --- | --- | --- | --- |
+| `brute_force` | `login_failure` from the same IP | **10** failures | **5** minutes | `high` |
+| `credential_spray` | `login_failure` from the same IP across distinct usernames | **5** usernames | **10** minutes | `high` |
+
+Incident `id` is a SHA-256 prefix of `rule_id|source_ip|window_start|window_end` (deterministic). `created_at` is the last contributing event time.
+
 ## Honest scope
 
-This is not a production detection platform. Parsing sample logs is implemented; nothing here claims to find threats, ingest live logs, or explain incidents. Features that do not exist (dashboard, mock alerts, AI, login) are intentionally absent.
+This is not a production detection platform. It finds brute-force and credential-spray patterns in **synthetic TLAL** fixtures. It does not ingest live logs, geolocate, learn baselines, or render a SOC UI. Features that do not exist (dashboard mock alerts, AI, login) are intentionally absent.
