@@ -1,0 +1,24 @@
+# ThreatLens auth log — normal office-hours activity (2024-03-12, UTC)
+# Format: TIMESTAMP EVENT_TYPE key=value ...
+# 20 events. One isolated failed password then success (not a brute-force burst).
+
+2024-03-12T13:58:11Z request user=- ip=192.0.2.15 resource=/health status=200
+2024-03-12T14:01:03Z login_success user=alice ip=203.0.113.10 ua="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/122.0.0.0" resource=/login status=200
+2024-03-12T14:01:08Z request user=alice ip=203.0.113.10 resource=/dashboard status=200
+2024-03-12T14:01:22Z request user=alice ip=203.0.113.10 resource=/reports/weekly status=200
+2024-03-12T14:05:41Z login_success user=bob ip=198.51.100.20 ua="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Firefox/123.0" resource=/login status=200
+2024-03-12T14:05:50Z request user=bob ip=198.51.100.20 resource=/dashboard status=200
+2024-03-12T14:06:12Z request user=bob ip=198.51.100.20 resource=/settings status=200
+2024-03-12T14:12:04Z login_failure user=carol ip=192.0.2.40 ua="Mozilla/5.0 (X11; Linux x86_64) Chrome/122.0.0.0" resource=/login status=401
+2024-03-12T14:12:11Z login_success user=carol ip=192.0.2.40 ua="Mozilla/5.0 (X11; Linux x86_64) Chrome/122.0.0.0" resource=/login status=200
+2024-03-12T14:12:18Z request user=carol ip=192.0.2.40 resource=/dashboard status=200
+2024-03-12T14:30:02Z login_success user=dave ip=203.0.113.45 ua="Mozilla/5.0 (iPhone; CPU iPhone OS 17_3 like Mac OS X)" resource=/login status=200
+2024-03-12T14:30:09Z request user=dave ip=203.0.113.45 resource=/inbox status=200
+2024-03-12T15:02:33Z request user=alice ip=203.0.113.10 resource=/files/q1.csv status=200
+2024-03-12T15:44:01Z login_success user=erin ip=198.51.100.88 ua="Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3) Safari/17.3" resource=/login status=200
+2024-03-12T15:44:10Z request user=erin ip=198.51.100.88 resource=/dashboard status=200
+2024-03-12T16:10:27Z request user=bob ip=198.51.100.20 resource=/reports/daily status=200
+2024-03-12T16:55:03Z request user=alice ip=203.0.113.10 resource=/logout status=200
+2024-03-12T17:01:14Z request user=carol ip=192.0.2.40 resource=/logout status=200
+2024-03-12T17:15:42Z request user=dave ip=203.0.113.45 resource=/logout status=200
+2024-03-12T17:40:08Z request user=erin ip=198.51.100.88 resource=/logout status=200
