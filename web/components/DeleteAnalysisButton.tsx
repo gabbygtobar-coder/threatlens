@@ -5,13 +5,16 @@ import { useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
 
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+
 export function DeleteAnalysisButton({ analysisId }: { analysisId: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function onDelete() {
-    if (!window.confirm("Delete this saved analysis and its incidents?")) {
+    if (!window.confirm("Delete this saved analysis and its incidents? This cannot be undone.")) {
       return;
     }
     setPending(true);
@@ -26,24 +29,31 @@ export function DeleteAnalysisButton({ analysisId }: { analysisId: string }) {
         setError(deleteError.message);
         return;
       }
-      router.push("/");
+      router.push("/analyses");
       router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Delete failed.");
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <div>
-      <button
-        type="button"
+    <div className="text-right">
+      <Button
+        variant="destructive"
+        size="sm"
         onClick={() => void onDelete()}
         disabled={pending}
-        className="text-sm text-red-700 underline hover:text-red-800 disabled:opacity-50"
+        aria-busy={pending}
       >
         {pending ? "Deleting…" : "Delete analysis"}
-      </button>
-      {error ? <p className="mt-1 text-sm text-red-700">{error}</p> : null}
+      </Button>
+      {error ? (
+        <Alert variant="error" className="mt-2">
+          {error}
+        </Alert>
+      ) : null}
     </div>
   );
 }

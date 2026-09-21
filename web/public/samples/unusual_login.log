@@ -1,0 +1,21 @@
+# ThreatLens auth log — unusual_login (time-of-day + frequency). 2024-03-16 UTC.
+# alice: two login_success outside 08:00–22:00 UTC (off_hours).
+# bob: five login_success in ~2 minutes during office hours (frequency).
+# carol: one daytime login_success (should not fire).
+# 10 events. 0 parse errors.
+
+# alice — off hours (03:00 UTC)
+2024-03-16T03:11:04Z login_success user=alice ip=203.0.113.10 ua="Mozilla/5.0" resource=/login status=200
+2024-03-16T03:11:12Z request user=alice ip=203.0.113.10 resource=/dashboard status=200
+2024-03-16T03:42:18Z login_success user=alice ip=203.0.113.10 ua="Mozilla/5.0" resource=/login status=200
+
+# carol — single daytime success (control)
+2024-03-16T14:02:00Z login_success user=carol ip=192.0.2.40 resource=/login status=200
+2024-03-16T14:02:08Z request user=carol ip=192.0.2.40 resource=/inbox status=200
+
+# bob — five successes in two minutes (still inside 08:00–22:00 UTC)
+2024-03-16T14:10:00Z login_success user=bob ip=198.51.100.20 resource=/login status=200
+2024-03-16T14:10:20Z login_success user=bob ip=198.51.100.20 resource=/login status=200
+2024-03-16T14:10:40Z login_success user=bob ip=198.51.100.20 resource=/login status=200
+2024-03-16T14:11:05Z login_success user=bob ip=198.51.100.20 resource=/login status=200
+2024-03-16T14:11:55Z login_success user=bob ip=198.51.100.20 resource=/login status=200

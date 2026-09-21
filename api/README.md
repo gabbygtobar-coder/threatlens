@@ -1,6 +1,6 @@
 # ThreatLens API
 
-FastAPI service. M4 still exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect` only. Persistence and login live in the Next.js app (Option A) — this process does not take a user JWT or a service role key.
+FastAPI service. M5 still exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect` only. Persistence, login, and the investigation UI live in the Next.js app (Option A) — this process does not take a user JWT or a service role key.
 
 ## Endpoints
 

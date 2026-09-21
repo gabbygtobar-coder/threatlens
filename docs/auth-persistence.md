@@ -1,4 +1,4 @@
-# Auth and persistence (M4)
+# Auth and persistence (M4, used by M5)
 
 ## Architecture: Option A
 
@@ -95,8 +95,8 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Sign up, paste a fixture
-from `fixtures/`, run detection, save, open the detail page.
+Open [http://localhost:3000](http://localhost:3000). Sign up, Analyze a fixture
+from `fixtures/` (or the Analyze page sample buttons), save, open Investigations.
 
 ## CORS (API)
 
@@ -108,10 +108,11 @@ Production: set `CORS_ORIGINS` on the API process to the deployed web origin
 (comma-separated). Example: `https://your-app.vercel.app`. Do not put the
 service role key on the API either — it does not need one under Option A.
 
-## What M4 is not
+## What this layer is not
 
-- No investigation dashboard, charts, or fake severity widgets (M5).
 - No AI.
 - No live log ingest.
+- No mock incident widgets — M5 lists only saved `/detect` rows.
 - CI does **not** talk to Supabase. Detection tests and a static SQL/RLS check
   run without secrets. End-to-end save/load requires Gabby’s project env.
+  Vercel notes: [vercel.md](vercel.md).

@@ -6,6 +6,11 @@ import { useState, type FormEvent } from "react";
 
 import { createClient } from "@/lib/supabase/client";
 
+import { Alert } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input, Label } from "@/components/ui/field";
+
 export function AuthForm({
   mode,
   nextPath = "/",
@@ -57,7 +62,7 @@ export function AuthForm({
       }
       if (!data.session) {
         setInfo(
-          "Account created. If email confirmation is enabled, check your inbox before logging in. For local use, turn off Confirm email in Supabase Auth settings.",
+          "Account created, but this project requires email confirmation. Check your inbox, then log in. For local demos, turn off Confirm email in Supabase Auth settings.",
         );
         return;
       }
@@ -71,50 +76,62 @@ export function AuthForm({
   }
 
   return (
-    <main className="mx-auto max-w-md px-6 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-      <p className="mt-2 text-sm text-zinc-600">
-        Email and password via Supabase Auth. No social login in M4.
-      </p>
-      <form onSubmit={(event) => void onSubmit(event)} className="mt-6 space-y-4">
-        <label className="block text-sm">
-          <span className="font-medium text-zinc-800">Email</span>
-          <input
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
-          />
-        </label>
-        <label className="block text-sm">
-          <span className="font-medium text-zinc-800">Password</span>
-          <input
-            type="password"
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-            required
-            minLength={6}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
-          />
-        </label>
-        {error ? <p className="text-sm text-red-700">{error}</p> : null}
-        {info ? <p className="text-sm text-zinc-700">{info}</p> : null}
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
-        >
-          {pending ? "Working…" : submitLabel}
-        </button>
-      </form>
-      <p className="mt-4 text-sm">
-        <Link href={altHref} className="text-zinc-700 underline hover:text-zinc-900">
-          {altLabel}
-        </Link>
-      </p>
+    <main className="mx-auto flex w-full max-w-md flex-col px-4 py-12 sm:px-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>
+            Email and password via Supabase Auth. No social providers, no SSO. Saving analyses
+            requires a session; running <code className="font-mono">/detect</code> does not.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={(event) => void onSubmit(event)} className="space-y-4" noValidate>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="mt-1"
+                aria-invalid={Boolean(error)}
+                disabled={pending}
+              />
+            </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                required
+                minLength={6}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="mt-1"
+                aria-invalid={Boolean(error)}
+                disabled={pending}
+              />
+              {mode === "signup" ? (
+                <p className="mt-1 text-xs text-zinc-500">At least 6 characters (Supabase default).</p>
+              ) : null}
+            </div>
+            {error ? <Alert variant="error">{error}</Alert> : null}
+            {info ? <Alert variant="info">{info}</Alert> : null}
+            <Button type="submit" className="w-full" disabled={pending} aria-busy={pending}>
+              {pending ? (mode === "login" ? "Signing in…" : "Creating account…") : submitLabel}
+            </Button>
+          </form>
+          <p className="mt-4 text-sm text-zinc-400">
+            <Link href={altHref} className="text-sky-400 hover:text-sky-300">
+              {altLabel}
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </main>
   );
 }

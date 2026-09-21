@@ -2,6 +2,8 @@
 
 Sample **ThreatLens Auth Log (TLAL)** files for the parser and detection engine. These are synthetic. They are not live telemetry.
 
+The Analyze page loads copies of the same files from `web/public/samples/` (not invented SOC events).
+
 Format recap — one event per line:
 
 ```

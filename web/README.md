@@ -1,10 +1,10 @@
 # ThreatLens web
 
-Next.js App Router frontend for M4: email/password auth, paste/upload a log,
-call FastAPI `/detect`, save the result to Supabase under RLS, list past
-analyses, open a basic detail page.
+Next.js App Router frontend for M5: landing page, email/password auth, paste or
+upload a log, call FastAPI `/detect`, save under Supabase RLS, investigations
+list/detail with filters, live `GET /rules` catalog.
 
-There is no investigation dashboard and no mock data.
+There is no mock incident feed and no in-browser detector.
 
 From this directory:
 
@@ -15,6 +15,10 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Without Supabase env the
-app still builds and shows a setup page. See the repository root README and
-[docs/auth-persistence.md](../docs/auth-persistence.md).
+Open [http://localhost:3000](http://localhost:3000).
+
+- Without Supabase env the app still builds. Landing, Analyze, and Rules work;
+  login/save/investigations show a setup page.
+- Without `NEXT_PUBLIC_API_URL` Analyze and Rules fail honestly (no demo mode).
+
+Vercel: set Root Directory to `web`. See the repository root README.
