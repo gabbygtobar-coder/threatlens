@@ -1,7 +1,7 @@
 # Log schema
 
-Normalized event produced by `api/app/parsing`. This is M1 only — parsing and
-shape, not detection.
+Normalized event produced by `api/app/parsing`. Event shape is M1; detection
+rules that consume these events are documented in [detection.md](detection.md).
 
 ## `LogEvent`
 

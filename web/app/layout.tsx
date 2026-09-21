@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "ThreatLens",
   description:
-    "Early skeleton for a cybersecurity log-analysis / threat-detection portfolio project. No detection yet.",
+    "Portfolio log-analysis project. Detection (brute-force, credential spray) is in the API, not this UI.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

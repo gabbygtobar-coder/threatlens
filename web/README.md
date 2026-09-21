@@ -1,6 +1,6 @@
 # ThreatLens web
 
-Minimal Next.js App Router frontend. M0 is a landing page only — no dashboard, alerts, or auth.
+Minimal Next.js App Router frontend. Landing page only — no dashboard, alerts, or auth. Detection is served by the API (`POST /detect`).
 
 From this directory:
 

@@ -1,0 +1,13 @@
+# ThreatLens auth log — credential spray (many usernames, one source IP)
+# 8 distinct users, one login_failure each, same IP: 198.51.100.66
+# 8 events over ~3.5 minutes. Below brute_force min_failures (10), at/above
+# credential_spray min_usernames (5) within the 10-minute window.
+
+2024-03-15T03:00:00Z login_failure user=alice ip=198.51.100.66 ua="Mozilla/5.0 (compatible; spray)" resource=/login status=401
+2024-03-15T03:00:30Z login_failure user=bob ip=198.51.100.66 ua="Mozilla/5.0 (compatible; spray)" resource=/login status=401
+2024-03-15T03:01:00Z login_failure user=carol ip=198.51.100.66 ua="Mozilla/5.0 (compatible; spray)" resource=/login status=401
+2024-03-15T03:01:30Z login_failure user=dave ip=198.51.100.66 ua="Mozilla/5.0 (compatible; spray)" resource=/login status=401
+2024-03-15T03:02:00Z login_failure user=erin ip=198.51.100.66 ua="Mozilla/5.0 (compatible; spray)" resource=/login status=401
+2024-03-15T03:02:30Z login_failure user=frank ip=198.51.100.66 ua="Mozilla/5.0 (compatible; spray)" resource=/login status=401
+2024-03-15T03:03:00Z login_failure user=grace ip=198.51.100.66 ua="Mozilla/5.0 (compatible; spray)" resource=/login status=401
+2024-03-15T03:03:30Z login_failure user=heidi ip=198.51.100.66 ua="Mozilla/5.0 (compatible; spray)" resource=/login status=401
