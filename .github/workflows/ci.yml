@@ -32,6 +32,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - name: pytest
+        run: pytest -q --tb=short
       - name: Import and /health smoke
         run: |
           python -c "from app.main import app"
