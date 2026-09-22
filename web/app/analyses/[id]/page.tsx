@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { DeleteAnalysisButton } from "@/components/DeleteAnalysisButton";
+import { ExplainFromEvidence } from "@/components/ExplainFromEvidence";
 import { InvestigationIncidents } from "@/components/InvestigationIncidents";
 import { SetupNeeded } from "@/components/SetupNeeded";
 import { getCurrentUser } from "@/lib/auth";
@@ -84,6 +85,11 @@ export default async function AnalysisDetailPage({
       <InvestigationIncidents
         incidents={rows}
         emptyMessage="No incidents were stored for this run. The original log is still saved. That can happen for the normal fixture or any log that does not meet a rule threshold."
+      />
+
+      <ExplainFromEvidence
+        incidents={rows}
+        context="Saved investigation. These incidents were stored from an earlier deterministic detect run."
       />
 
       <details>

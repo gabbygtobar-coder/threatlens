@@ -16,6 +16,7 @@ import { fromDetectIncident } from "@/lib/incidents";
 import { SAMPLE_FIXTURES } from "@/lib/samples";
 import { createClient } from "@/lib/supabase/client";
 
+import { ExplainFromEvidence } from "@/components/ExplainFromEvidence";
 import { IncidentCard } from "@/components/IncidentCard";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -277,6 +278,15 @@ export function DetectAndSave({ userId }: { userId: string | null }) {
                   ))}
                 </ul>
               </details>
+            ) : null}
+
+            {result.incidents.length > 0 ? (
+              <div className="mt-4">
+                <ExplainFromEvidence
+                  incidents={result.incidents.map(fromDetectIncident)}
+                  context="Live POST /detect response from the deterministic engine."
+                />
+              </div>
             ) : null}
 
             {userId ? (

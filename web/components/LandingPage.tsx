@@ -19,8 +19,9 @@ export function LandingPage({
       </h1>
       <p className="mt-4 max-w-2xl text-lg text-zinc-400">
         Paste an auth/access log. A FastAPI engine runs six deterministic rules and returns
-        incidents with evidence. Sign in to save a run. There is no AI detector, no live SIEM, and
-        no fake global threat map.
+        incidents with evidence. Sign in to save a run. Optional Explain from evidence only
+        restates those incidents. There is no AI detector, no live SIEM, and no fake global threat
+        map.
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
@@ -67,19 +68,20 @@ export function LandingPage({
           </ul>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-          <h2 className="text-sm font-semibold text-zinc-50">Implemented (M0–M6)</h2>
+          <h2 className="text-sm font-semibold text-zinc-50">Implemented (M0–M7)</h2>
           <ul className="mt-3 space-y-2 text-sm text-zinc-400">
             <li>TLAL parser and six rules</li>
             <li>Email/password auth + RLS save</li>
             <li>Investigation UI over real /detect output</li>
             <li>Live GET /rules catalog</li>
             <li>Deploy docs, 1 MiB body cap, POST rate limit</li>
+            <li>Explain from evidence (optional; not a detector)</li>
           </ul>
         </div>
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
           <h2 className="text-sm font-semibold text-zinc-50">Not this product</h2>
           <ul className="mt-3 space-y-2 text-sm text-zinc-400">
-            <li>M7 AI explain-only — not started</li>
+            <li>No AI detector — explain never creates incidents</li>
             <li>No MaxMind / real GeoIP</li>
             <li>No live log streaming</li>
             <li>No mock incident feed or charts</li>
@@ -98,6 +100,11 @@ export function LandingPage({
           </li>
           <li>Engine parses TLAL, runs the six rules, returns incidents + parse errors.</li>
           <li>If you are signed in, Save writes that payload to your Supabase rows (RLS).</li>
+          <li>
+            Optional: <strong className="font-medium text-zinc-300">Explain from evidence</strong>{" "}
+            sends those incidents to <code className="font-mono text-zinc-300">POST /explain</code>.
+            It does not detect. If the API has no OpenAI key, the button hides after HTTP 503.
+          </li>
           <li>Investigations lists only your saved analyses. Empty means you have not saved yet.</li>
         </ol>
       </section>

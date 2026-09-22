@@ -23,7 +23,9 @@ Set these on the Vercel project (Production / Preview as needed). They are `NEXT
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Login, save, investigations | Project URL. Omit to ship a read-only visual (landing / analyze / rules still render). |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Login, save, investigations | Anon / publishable key only. Never `service_role`. |
-| `NEXT_PUBLIC_API_URL` | Analyze, Rules | Public FastAPI origin, e.g. `https://something.onrender.com`. **Not** `http://127.0.0.1:8000` — visitors' browsers cannot reach your laptop. If unset or fetch fails, the UI shows an error. There is no mock engine. |
+| `NEXT_PUBLIC_API_URL` | Analyze, Rules, Explain | Public FastAPI origin, e.g. `https://something.onrender.com`. **Not** `http://127.0.0.1:8000` — visitors' browsers cannot reach your laptop. If unset or fetch fails, the UI shows an error. There is no mock engine. |
+
+Do **not** set `OPENAI_API_KEY` or `NEXT_PUBLIC_OPENAI_API_KEY` on Vercel. Explain-only keeps that secret on the API (Render). If it is missing, the UI gets HTTP 503 and hides Explain from evidence.
 
 CI sets `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000` only so `next build` has a value. That does not mean a production API exists.
 

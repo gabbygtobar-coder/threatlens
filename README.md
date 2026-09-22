@@ -4,7 +4,7 @@ ThreatLens is a portfolio project for cybersecurity log analysis and threat dete
 
 **Stack:** Next.js (`web/`) for the investigation UI. FastAPI (`api/`) for parse + detect. Supabase Auth + Postgres with RLS for user-scoped persistence.
 
-**Current status:** **M6 harden + deploy-ready.** M0–M5 product work is merged (six-rule engine, investigation UI, Option A auth/RLS). This milestone tightens the demo for hosting: body cap, in-memory POST rate limit, localhost-only CORS default, security headers, API Dockerfile, and Gabby deploy/smoke docs. **M7 AI explain-only is not started.**
+**Current status:** **M7 explain-only.** M0–M6 stay as shipped (six-rule engine, investigation UI, Option A auth/RLS, harden + deploy docs). This milestone adds optional `POST /explain`: a short explanation of incidents the deterministic engine already returned. It does **not** detect, score, or invent incidents. If `OPENAI_API_KEY` is unset, the API returns **503** and the UI does not show a fake explanation.
 
 This repo does **not** auto-deploy to Gabby’s Vercel/Render/Supabase. Wire those accounts with [docs/deploy.md](docs/deploy.md). CI does not use live credentials.
 
@@ -19,14 +19,16 @@ This repo does **not** auto-deploy to Gabby’s Vercel/Render/Supabase. Wire tho
 | **COMPLETE** | **M4** Supabase email auth + Postgres RLS (Option A; no `service_role` in the web app) |
 | **COMPLETE** | **M5** investigation UI over **real** `/detect` output (no mock incident feed) |
 | **COMPLETE** | **M6** harden + deploy docs (1 MiB body cap; POST `/parse`+`/detect` rate limit; CORS defaults; Next security headers; `api/Dockerfile`; [docs/deploy.md](docs/deploy.md)) |
-| **NOT DONE** | **M7** AI explain-only (optional; no OpenAI; never the detector) |
+| **COMPLETE** | **M7** AI explain-only (`POST /explain` summarizes existing incidents or a pasted detect response; **not** a detector; **503** if `OPENAI_API_KEY` is unset — no fake text) |
+| **NOT DONE** | AI as a detector (will not be added — explain-only is the ceiling) |
 | **NOT DONE** | Live log ingest / SIEM, real MaxMind GeoIP, production Redis rate limiting, org/shared access |
 
 ## Architecture (Option A)
 
 ```
 Browser
-  → FastAPI POST /detect     (stateless engine)
+  → FastAPI POST /detect     (stateless engine — the only thing that creates incidents)
+  → FastAPI POST /explain    (optional prose over those incidents; 503 if no key)
   → FastAPI GET /rules       (live thresholds)
   → Supabase Auth + Postgres (CRUD saved runs; RLS = own rows only)
 ```
@@ -40,17 +42,17 @@ Option B (API holds the JWT and writes to Postgres) was not used so the detectio
 - **M3** — more rules: unusual_login, impossible_travel (simulated), request_frequency, restricted_access
 - **M4** — auth + RLS persistence
 - **M5** — investigation UI over real detections
-- **M6** — harden + deploy docs *(this)*
-- **Optional, last (M7)** — AI as explain-only (never as the detector) — **not started**
+- **M6** — harden + deploy docs
+- **M7** — AI explain-only (never the detector) *(this)*
 
-## Pages (M5, unchanged in M6)
+## Pages (M5 UI, plus M7 Explain from evidence)
 
 | Path | What it is |
 | --- | --- |
 | `/` | Honest landing: stack, implemented vs not |
-| `/analyze` | Paste/upload TLAL or load a repo fixture → `POST /detect` → incidents + parse errors. Save if signed in |
+| `/analyze` | Paste/upload TLAL or load a repo fixture → `POST /detect` → incidents + parse errors. **Explain from evidence** if incidents exist. Save if signed in |
 | `/analyses` | Investigations list (your saved runs; severity counts from stored incidents) |
-| `/analyses/[id]` | Investigation detail with severity / rule / status filters and readable evidence |
+| `/analyses/[id]` | Investigation detail with severity / rule / status filters, readable evidence, and **Explain from evidence** |
 | `/rules` | Live `GET /rules` catalog |
 | `/login`, `/signup` | Supabase email/password |
 
@@ -91,8 +93,11 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 - `GET http://127.0.0.1:8000/rules` → registered rule ids and thresholds
 - `POST http://127.0.0.1:8000/parse` — raw log text → `{ "events": [...], "errors": [...] }`
 - `POST http://127.0.0.1:8000/detect` — same body as `/parse` → `{ "events_count": N, "incidents": [...], "parse_errors": [...] }`
+- `POST http://127.0.0.1:8000/explain` — `{ "incidents": [...], "context"?: "..." }` → `{ "explanation": "..." }`
 
-Bodies over **1 MiB** are `413`. POST `/parse` and `/detect` are rate-limited in-memory (**60/minute/IP** by default). CORS defaults to `http://localhost:3000` and `http://127.0.0.1:3000` only — set `CORS_ORIGINS` for a hosted UI. See `api/.env.example`.
+`OPENAI_API_KEY` is **API-only**. Put it in `api/.env` locally or on Render. Never set `NEXT_PUBLIC_OPENAI_API_KEY` (or any `NEXT_PUBLIC_*` copy of the key) on Vercel — the browser must not see it. Optional `OPENAI_MODEL` (default `gpt-4o-mini`) and `OPENAI_BASE_URL` (OpenAI-compatible chat completions). If the key is missing, `/explain` returns **503** and the Explain button hides. Detection still works. The prompt may only use the evidence fields you send; it must not invent threats.
+
+Bodies over **1 MiB** are `413`. POST `/parse`, `/detect`, and `/explain` share an in-memory rate limit (**60/minute/IP** by default). CORS defaults to `http://localhost:3000` and `http://127.0.0.1:3000` only — set `CORS_ORIGINS` for a hosted UI. See `api/.env.example`. Gabby’s Render steps: [docs/deploy.md](docs/deploy.md).
 
 ```bash
 # From the repo root, with the API running on :8000
@@ -135,16 +140,16 @@ npm run build
 
 ## Interview demo path
 
-1. Landing — explain Option A (stateless FastAPI, RLS in Next.js). Point at Implemented vs Not. M7 AI is listed as not started.
+1. Landing — explain Option A (stateless FastAPI, RLS in Next.js). Point at Implemented vs Not. M7 is explain-only; there is still no AI detector.
 2. Rules — live `GET /rules` (if the API is up). Thresholds come from the engine.
-3. Analyze — load **normal** (expect 0 incidents), then **brute_force**. Expand evidence JSON. Load **edge** to show parse errors.
-4. Sign in → Save → Investigations list (severity chips from saved rows) → detail filters.
+3. Analyze — load **normal** (expect 0 incidents, no Explain button), then **brute_force**. Expand evidence JSON. Click **Explain from evidence** (not “AI detected”). With `OPENAI_API_KEY` on the API, the prose restates that incident. Without the key, the button hides after HTTP 503 and no explanation appears. Load **edge** to show parse errors.
+4. Sign in → Save → Investigations list (severity chips from saved rows) → detail filters → Explain from evidence on the saved incidents.
 
 Do not show a threat map. `impossible_travel` is simulated `country=` / TEST-NET prefixes, not MaxMind.
 
 Hosted smoke (after [docs/deploy.md](docs/deploy.md)): landing → rules → analyze fixture → signup → save → analyses.
 
-## Thresholds (M3 defaults, unchanged in M4–M6)
+## Thresholds (M3 defaults, unchanged in M4–M7)
 
 | Rule | Trigger | Defaults | Severity |
 | --- | --- | --- | --- |
@@ -161,4 +166,4 @@ Incident `id` from the engine is a SHA-256 prefix of `rule_id|correlation_key|wi
 
 ## Honest scope
 
-This is not a production detection platform. It finds the patterns above in **synthetic TLAL** fixtures, then stores them per user. It does not ingest live logs, perform real geolocation, learn baselines, or invent SOC noise for the UI. Rate limiting is in-memory per API instance — enough for a demo dyno, not a multi-region WAF.
+This is not a production detection platform. It finds the patterns above in **synthetic TLAL** fixtures, then stores them per user. It does not ingest live logs, perform real geolocation, learn baselines, or invent SOC noise for the UI. Explain-only text is optional and is not a finding. Rate limiting is in-memory per API instance — enough for a demo dyno, not a multi-region WAF.

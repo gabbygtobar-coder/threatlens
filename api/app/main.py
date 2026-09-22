@@ -10,7 +10,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
 from app.detection import default_engine
-from app.models import DetectResult, ParseRequest, ParseResult, RulesResponse
+from app.explain import explain_configured, explain_incidents
+from app.models import (
+    DetectResult,
+    ExplainRequest,
+    ExplainResponse,
+    ParseRequest,
+    ParseResult,
+    RulesResponse,
+)
 from app.parsing import parse_text
 from app.rate_limit import RateLimitMiddleware, rate_limit_config_summary
 
@@ -40,22 +48,25 @@ async def lifespan(_app: FastAPI):
         )
     # Startup logs are config only — never env dumps, bodies, or keys.
     logger.info(
-        "API ready: cors_origins=%s max_body_bytes=%s rate_limit=%s",
+        "API ready: cors_origins=%s max_body_bytes=%s rate_limit=%s explain_configured=%s",
         origins,
         MAX_BODY_BYTES,
         rate_limit_config_summary(),
+        explain_configured(),
     )
     yield
 
 
 app = FastAPI(
     title="ThreatLens API",
-    version="0.6.0",
+    version="0.7.0",
     description=(
-        "Log parser and detection engine (M6). Rules: brute_force, credential_spray, "
+        "Log parser and detection engine. Rules: brute_force, credential_spray, "
         "unusual_login, impossible_travel (simulated geo), request_frequency, "
-        "restricted_access. Stateless: persistence and auth live in the Next.js app "
-        "via Supabase (Option A). No AI. 1 MiB body cap; in-memory POST rate limit."
+        "restricted_access. Optional POST /explain summarizes incidents the engine "
+        "already returned — it does not detect, score, or invent findings. "
+        "Missing OPENAI_API_KEY returns 503. Stateless: persistence and auth live "
+        "in the Next.js app via Supabase (Option A). 1 MiB body cap; in-memory POST rate limit."
     ),
     lifespan=lifespan,
 )
@@ -124,6 +135,50 @@ async def detect_logs(request: Request) -> DetectResult:
         incidents=incidents,
         parse_errors=parsed.errors,
     )
+
+
+@app.post(
+    "/explain",
+    response_model=ExplainResponse,
+    responses={
+        400: {"description": "No incidents to explain, or the body is not valid JSON"},
+        413: {"description": "Body exceeds 1 MiB"},
+        422: {"description": "Incidents payload failed validation"},
+        429: {"description": "Rate limit exceeded"},
+        502: {"description": "Explain provider failed; no explanation was invented"},
+        503: {"description": "OPENAI_API_KEY is not set"},
+    },
+)
+async def explain(request: Request) -> ExplainResponse:
+    """Summarize incidents the caller already has. Does not run detection."""
+    parsed = await _read_explain_request(request)
+    return ExplainResponse(explanation=explain_incidents(parsed))
+
+
+async def _read_explain_request(request: Request) -> ExplainRequest:
+    raw = await request.body()
+    if len(raw) > MAX_BODY_BYTES:
+        raise HTTPException(status_code=413, detail="Request body exceeds 1 MiB limit.")
+    if not raw:
+        raise HTTPException(
+            status_code=400,
+            detail='JSON body must be {"incidents": [...]} from the detection engine.',
+        )
+    try:
+        decoded = raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise HTTPException(status_code=400, detail="Body must be valid UTF-8.") from exc
+    try:
+        payload = json.loads(decoded)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON: {exc.msg}") from exc
+    try:
+        return ExplainRequest.model_validate(payload)
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail='JSON body must be {"incidents": [...], "context"?: string}.',
+        ) from exc
 
 
 async def _read_log_text(request: Request) -> str | None:

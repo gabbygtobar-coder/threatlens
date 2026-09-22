@@ -1,7 +1,9 @@
 # Deploy ThreatLens (Gabby)
 
-M6 is **code + docs**. This agent does not log into your Vercel / Render / Supabase
-accounts. Follow A → D in order. There is no AI (M7) and no mock detector.
+M7 adds optional explain-only on the API. This agent does not log into your
+Vercel / Render / Supabase accounts. Follow A → D in order. There is still no
+AI detector and no mock detector. Explain only summarizes incidents `/detect`
+already returned.
 
 Chicken-and-egg: the API needs the Vercel origin in `CORS_ORIGINS`, and Vercel
 needs the public API URL in `NEXT_PUBLIC_API_URL`. Deploy the API first (localhost
@@ -45,18 +47,41 @@ CORS_ORIGINS=https://YOUR-APP.vercel.app,http://localhost:3000,http://127.0.0.1:
 - Do **not** use `*` unless you are debugging. Prefer the exact `https://…vercel.app`
   URL (and Preview URLs if you use them).
 - Optional: `RATE_LIMIT_REQUESTS` / `RATE_LIMIT_WINDOW_SECONDS` (defaults **60 POST
-  /parse|/detect per IP per 60s**, in-memory, per instance). `RATE_LIMIT_ENABLED=false`
+  /parse|/detect|/explain per IP per 60s**, in-memory, per instance). `RATE_LIMIT_ENABLED=false`
   disables it.
 - Bodies over **1 MiB** are `413`. That bound is a code constant, not an env var.
 
-Confirm:
+### Optional: Explain from evidence (M7)
+
+`OPENAI_API_KEY` belongs on the **API** (Render) only. Do not add it to Vercel.
+Do not create `NEXT_PUBLIC_OPENAI_API_KEY`. The Next.js bundle must not contain the key.
+
+1. Render dashboard → your API web service → **Environment**.
+2. Add **Environment Variable**: key `OPENAI_API_KEY`, value your OpenAI secret.
+   Mark it secret if Render offers that. Do not commit it.
+3. Optional: `OPENAI_MODEL` (default `gpt-4o-mini`). Optional: `OPENAI_BASE_URL`
+   if you use an OpenAI-compatible chat completions endpoint.
+4. Save. Render restarts the service. You do not need to redeploy Vercel for this
+   key — the browser already calls the API.
+
+If the variable is missing, `POST /explain` returns **503**. Analyze and the
+investigation page hide **Explain from evidence** and do not invent text.
+`/detect` is unchanged either way.
+
+Confirm the process is up, and that explain fails closed until the key is set
+(503, no `explanation` field):
 
 ```bash
 curl -sf https://YOUR-API-HOST/health
 curl -sf https://YOUR-API-HOST/rules
+curl -sS -o /dev/null -w '%{http_code}\n' -X POST https://YOUR-API-HOST/explain \
+  -H 'Content-Type: application/json' \
+  -d '{"incidents":[{"rule_id":"brute_force","severity":"high","title":"Brute force","description":"50 failures","evidence":{"source_ip":"203.0.113.77","failure_count":50}}]}'
 ```
 
-No secrets belong on this service. It does not log request bodies or env dumps.
+The API does not log request bodies or env dumps. It still does not get a
+Supabase key. The only secret it should hold for this milestone is
+`OPENAI_API_KEY`.
 
 ## C. Vercel (web)
 
@@ -86,10 +111,10 @@ Use the **Vercel URL** (not localhost) after CORS is updated.
 
 1. **Landing** (`/`) — stack copy, Implemented vs Not, API status (live `/health` or an honest error).
 2. **Rules** (`/rules`) — live `GET /rules` lists the six thresholds. Not a mock catalog.
-3. **Analyze** (`/analyze`) — load **normal** (0 incidents), then **brute_force** (incidents + evidence). Optional: **edge** for parse errors.
+3. **Analyze** (`/analyze`) — load **normal** (0 incidents, no Explain button), then **brute_force** (incidents + evidence). Click **Explain from evidence**. With the Render key set, you get prose about that incident. Without it, the button hides after HTTP 503 and no fake explanation appears. Optional: **edge** for parse errors.
 4. **Sign up** — create an account. If Confirm email is off, you should land in-session.
 5. **Save** — save the brute_force run.
-6. **Investigations** (`/analyses`) — the saved row appears; open it, filters work, raw log is there.
+6. **Investigations** (`/analyses`) — the saved row appears; open it, filters work, raw log is there. **Explain from evidence** is on the detail page for those saved incidents.
 
 If Analyze fails with CORS / fetch: `CORS_ORIGINS` missing the Vercel origin, or
 `NEXT_PUBLIC_API_URL` still pointing at localhost (rebuild required after env change).
