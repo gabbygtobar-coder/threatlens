@@ -20,8 +20,8 @@ export default async function AnalyzePage() {
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-50">Analyze</h1>
         <p className="mt-2 max-w-2xl text-sm text-zinc-400">
           Paste or upload ThreatLens Auth Log (TLAL) text. This page calls the FastAPI detection
-          engine and shows whatever it returns — including zero incidents. Saving requires a signed-in
-          Supabase user.
+          engine and shows whatever it returns — including zero incidents. Explain from evidence
+          only summarizes those incidents. Saving requires a signed-in Supabase user.
         </p>
       </div>
       <ApiStatus />

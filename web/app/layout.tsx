@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s · ThreatLens",
   },
   description:
-    "Detection-first log analysis. FastAPI rules over TLAL; saved investigations in Supabase under RLS. No AI detector and no mock SOC data.",
+    "Detection-first log analysis. FastAPI rules over TLAL; saved investigations in Supabase under RLS. Optional explain-from-evidence. No AI detector and no mock SOC data.",
 };
 
 export const dynamic = "force-dynamic";

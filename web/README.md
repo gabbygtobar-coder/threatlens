@@ -1,8 +1,10 @@
 # ThreatLens web
 
-Next.js App Router frontend (M5 UI, M6 harden): landing page, email/password
-auth, paste or upload a log, call FastAPI `/detect`, save under Supabase RLS,
-investigations list/detail with filters, live `GET /rules` catalog.
+Next.js App Router frontend (M5 UI, M6 harden, M7 explain button): landing page,
+email/password auth, paste or upload a log, call FastAPI `/detect`, save under
+Supabase RLS, investigations list/detail with filters, live `GET /rules` catalog.
+**Explain from evidence** calls `POST /explain` with the incidents already on
+screen. It is not a detector. The OpenAI key is not a web env var.
 
 Security headers are set in `next.config.ts`. There is no mock incident feed,
 no in-browser detector, and no `service_role` key.

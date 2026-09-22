@@ -1,4 +1,4 @@
-"""In-memory per-IP rate limit for POST /parse and POST /detect.
+"""In-memory per-IP rate limit for POST /parse, POST /detect, and POST /explain.
 
 This is a single-process limiter for a portfolio demo dyno. It is not Redis,
 not SlowAPI, and not shared across replicas. Disable with RATE_LIMIT_ENABLED=false.
@@ -21,7 +21,7 @@ from starlette.types import ASGIApp
 
 DEFAULT_MAX_REQUESTS = 60
 DEFAULT_WINDOW_SECONDS = 60
-LIMITED_PATHS = frozenset({"/parse", "/detect"})
+LIMITED_PATHS = frozenset({"/parse", "/detect", "/explain"})
 
 _lock = Lock()
 _hits: dict[str, deque[float]] = defaultdict(deque)
@@ -51,7 +51,7 @@ def rate_limit_window_seconds() -> int:
 def rate_limit_config_summary() -> str:
     if not rate_limit_enabled():
         return "disabled"
-    return f"{rate_limit_max_requests()}/{rate_limit_window_seconds()}s POST /parse,/detect"
+    return f"{rate_limit_max_requests()}/{rate_limit_window_seconds()}s POST /parse,/detect,/explain"
 
 
 def reset_rate_limit_state() -> None:

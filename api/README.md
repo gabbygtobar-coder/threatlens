@@ -1,6 +1,6 @@
 # ThreatLens API
 
-FastAPI service. M6 still exposes `GET /health`, `GET /rules`, `POST /parse`, and `POST /detect` only. Persistence, login, and the investigation UI live in the Next.js app (Option A) — this process does not take a user JWT or a service role key. No AI.
+FastAPI service. Exposes `GET /health`, `GET /rules`, `POST /parse`, `POST /detect`, and optional `POST /explain`. Persistence, login, and the investigation UI live in the Next.js app (Option A) — this process does not take a user JWT or a service role key. Explain-only is not a detector: it never creates, scores, or invents incidents.
 
 ## Endpoints
 
@@ -10,6 +10,7 @@ FastAPI service. M6 still exposes `GET /health`, `GET /rules`, `POST /parse`, an
 | `GET` | `/rules` | Registered detectors and thresholds. |
 | `POST` | `/parse` | Parse raw log text. Returns `{ "events": [...], "errors": [...] }`. |
 | `POST` | `/detect` | Parse, then run the engine. Returns `{ "events_count", "incidents", "parse_errors" }`. |
+| `POST` | `/explain` | Explain incidents you already have. Body `{ "incidents": [...], "context"?: "..." }` → `{ "explanation": "..." }`. Does not run rules. |
 
 `POST /parse` and `POST /detect` accept:
 
@@ -18,7 +19,27 @@ FastAPI service. M6 still exposes `GET /health`, `GET /rules`, `POST /parse`, an
 
 Bodies larger than **1 MiB** are rejected (`413`). That bound is intentional and kept. Malformed lines are listed in parse errors; they do not fail the request.
 
-POST `/parse` and `/detect` are also **rate-limited** in-memory: **60 requests / 60 seconds / client IP** by default (`RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS`). `GET /health` and `GET /rules` are not limited. Exceeding the cap is `429`. This is per process (not Redis); disable with `RATE_LIMIT_ENABLED=false`. Request bodies are not logged.
+POST `/parse`, `/detect`, and `/explain` share an in-memory rate limit: **60 requests / 60 seconds / client IP** by default (`RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS`). `GET /health` and `GET /rules` are not limited. Exceeding the cap is `429`. This is per process (not Redis); disable with `RATE_LIMIT_ENABLED=false`. Request bodies are not logged.
+
+## Explain-only (optional)
+
+`POST /explain` sends the supplied incidents to an OpenAI-compatible chat completions API and returns prose. The prompt tells the model to use only those evidence fields, not to invent threats, and to stay short for an interview demo.
+
+```
+OPENAI_API_KEY=sk-...          # required for /explain; API process only
+OPENAI_MODEL=gpt-4o-mini       # optional
+OPENAI_BASE_URL=https://api.openai.com/v1   # optional compatible endpoint
+```
+
+**Never** put this key in the Next.js app, Vercel, or any `NEXT_PUBLIC_*` variable. The browser calls `/explain` on the API; the API holds the key.
+
+If `OPENAI_API_KEY` is missing or blank, the route returns **503** and does not invent an explanation. An empty `incidents` array is **400** (nothing to explain). Provider failures are **502** with no placeholder text. Detection thresholds are unchanged.
+
+```bash
+curl -sS -X POST http://127.0.0.1:8000/explain \
+  -H 'Content-Type: application/json' \
+  -d '{"incidents":[{"rule_id":"brute_force","severity":"high","title":"Brute force","description":"50 failures","evidence":{"source_ip":"203.0.113.77","failure_count":50}}]}'
+```
 
 ## CORS
 

@@ -1,8 +1,8 @@
 # Minimal image for Render / Railway / Fly. Build from this directory:
 #   docker build -t threatlens-api .
 # The process binds 0.0.0.0:$PORT (default 8000). Health: GET /health.
-# Do not bake secrets into the image — set CORS_ORIGINS (and optional RATE_LIMIT_*)
-# on the host.
+# Do not bake secrets into the image — set CORS_ORIGINS, optional RATE_LIMIT_*,
+# and optional OPENAI_API_KEY on the host. Never pass the OpenAI key to the web app.
 
 FROM python:3.12-slim
 

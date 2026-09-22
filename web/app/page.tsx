@@ -7,7 +7,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 export const metadata: Metadata = {
   title: "ThreatLens",
   description:
-    "Detection-first log analysis. Six deterministic FastAPI rules, optional Supabase save. No AI, no mock incidents.",
+    "Detection-first log analysis. Six deterministic FastAPI rules, optional Supabase save, optional explain-from-evidence. No AI detector and no mock incidents.",
 };
 
 export const dynamic = "force-dynamic";

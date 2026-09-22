@@ -110,7 +110,7 @@ service role key on the API either — it does not need one under Option A.
 
 ## What this layer is not
 
-- No AI.
+- No AI detector. Optional explain-only is `POST /explain` on the API (`OPENAI_API_KEY` on Render, never `NEXT_PUBLIC_*`). This auth layer does not call OpenAI.
 - No live log ingest.
 - No mock incident widgets — M5 lists only saved `/detect` rows.
 - CI does **not** talk to Supabase. Detection tests and a static SQL/RLS check

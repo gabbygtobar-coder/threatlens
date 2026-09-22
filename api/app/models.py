@@ -143,3 +143,36 @@ class RuleInfo(BaseModel):
 
 class RulesResponse(BaseModel):
     rules: list[RuleInfo]
+
+
+class ExplainIncident(BaseModel):
+    """One incident the caller already has. `/explain` does not create these."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    id: str | None = Field(default=None, max_length=128)
+    engine_incident_id: str | None = Field(default=None, max_length=128)
+    rule_id: str = Field(min_length=1, max_length=64)
+    severity: str = Field(min_length=1, max_length=32)
+    status: str | None = Field(default=None, max_length=32)
+    title: str = Field(min_length=1, max_length=300)
+    description: str = Field(default="", max_length=4000)
+    evidence: dict[str, Any]
+    created_at: str | None = Field(default=None, max_length=64)
+
+
+class ExplainRequest(BaseModel):
+    """Body for POST /explain. Incidents must already exist; context is optional."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    incidents: list[ExplainIncident] = Field(max_length=25)
+    context: str | None = Field(default=None, max_length=2000)
+
+
+class ExplainResponse(BaseModel):
+    """Prose only. No new incidents, scores, or rule hits."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    explanation: str
